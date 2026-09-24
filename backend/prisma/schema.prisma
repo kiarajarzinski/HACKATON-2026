@@ -4,20 +4,74 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // Esta URL ya la tenés configurada en tu .env apuntando a Supabase
 }
 
+enum RolUsuario {
+  PRODUCTOR
+  EMPRENDIMIENTO
+  CONSUMIDOR
+}
+
+enum TipoEstablecimiento {
+  CHACRA_FAMILIAR
+  QUINTA_HUERTA
+  CAMPO_PARCELA
+  APIARIO_MONTE
+  FINCA_FRUTALES
+}
+
+enum RubroEmprendimiento {
+  ALIMENTOS_CONSERVAS
+  TEXTIL_ARTESANIAS
+  COSMETICA_NATURAL
+  RECICLAJE_SUSTENTABILIDAD
+  SERVICIOS_PRODUCCION
+}
+
+// Tabla central de autenticación
 model Usuario {
-  id              String           @id @default(uuid())
-  nombre          String
-  email           String           @unique
-  password        String
-  emprendimientos Emprendimiento[]
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  rol            RolUsuario
+  
+  // Relaciones (Solo una de estas tendrá datos, dependiendo del rol)
+  productor      Productor?
+  emprendimiento Emprendimiento?
+  consumidor     Consumidor?
+  
+  createdAt      DateTime        @default(now())
+}
+
+// Tablas específicas de perfiles
+model Productor {
+  id                  String              @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  tipoEstablecimiento TipoEstablecimiento
+  
+  usuarioId           String              @unique
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 model Emprendimiento {
-  id              String   @id @default(uuid())
-  nombre          String
-  descripcion     String?
-  usuarioId       String
-  usuario         Usuario  @relation(fields: [usuarioId], references: [id])
+  id                  String              @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  rubro               RubroEmprendimiento
+  
+  usuarioId           String              @unique
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+model Consumidor {
+  id        String  @id @default(uuid())
+  nombre    String
+  apellido  String
+  
+  usuarioId String  @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
