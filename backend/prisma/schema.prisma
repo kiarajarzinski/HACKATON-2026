@@ -4,21 +4,62 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Esta URL ya la tenés configurada en tu .env apuntando a Supabase
+}
+
+model Usuario {
+  id                String          @id @default(uuid())
+  email             String          @unique
+  password          String
+  rol               RolUsuario
+  createdAt         DateTime        @default(now())
+  emailVerificado   Boolean         @default(false)
+  tokenExpiracion   DateTime?
+  tokenVerificacion String?         @unique
+  consumidor        Consumidor?
+  emprendimiento    Emprendimiento?
+  productor         Productor?
+
+  @@map("usuarios")
+}
+
+model Emprendimiento {
+  id                String              @id @default(uuid())
+  nombreCuenta      String
+  nombreResponsable String
+  telefono          String
+  rubro             RubroEmprendimiento
+  usuarioId         String              @unique
+  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("emprendimientos")
+}
+
+model Consumidor {
+  id        String  @id @default(uuid())
+  nombre    String
+  apellido  String
+  usuarioId String  @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("consumidores")
+}
+
+model Productor {
+  id                  String              @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  tipoEstablecimiento TipoEstablecimiento
+  usuarioId           String              @unique
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("productores")
 }
 
 enum RolUsuario {
   PRODUCTOR
   EMPRENDIMIENTO
   CONSUMIDOR
-}
-
-enum TipoEstablecimiento {
-  CHACRA_FAMILIAR
-  QUINTA_HUERTA
-  CAMPO_PARCELA
-  APIARIO_MONTE
-  FINCA_FRUTALES
 }
 
 enum RubroEmprendimiento {
@@ -29,49 +70,10 @@ enum RubroEmprendimiento {
   SERVICIOS_PRODUCCION
 }
 
-// Tabla central de autenticación
-model Usuario {
-  id             String          @id @default(uuid())
-  email          String          @unique
-  password       String
-  rol            RolUsuario
-  
-  // Relaciones (Solo una de estas tendrá datos, dependiendo del rol)
-  productor      Productor?
-  emprendimiento Emprendimiento?
-  consumidor     Consumidor?
-  
-  createdAt      DateTime        @default(now())
-}
-
-// Tablas específicas de perfiles
-model Productor {
-  id                  String              @id @default(uuid())
-  nombreCuenta        String
-  nombreResponsable   String
-  telefono            String
-  tipoEstablecimiento TipoEstablecimiento
-  
-  usuarioId           String              @unique
-  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-}
-
-model Emprendimiento {
-  id                  String              @id @default(uuid())
-  nombreCuenta        String
-  nombreResponsable   String
-  telefono            String
-  rubro               RubroEmprendimiento
-  
-  usuarioId           String              @unique
-  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-}
-
-model Consumidor {
-  id        String  @id @default(uuid())
-  nombre    String
-  apellido  String
-  
-  usuarioId String  @unique
-  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+enum TipoEstablecimiento {
+  CHACRA_FAMILIAR
+  QUINTA_HUERTA
+  CAMPO_PARCELA
+  APIARIO_MONTE
+  FINCA_FRUTALES
 }

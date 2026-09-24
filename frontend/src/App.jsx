@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Navbar } from './components/Navbar';
+import { Navbar } from './components/auth/Navbar';
 // TODO: Crear estos componentes luego en la carpeta pages/
 // import { RegisterConsumidor } from './pages/RegisterConsumidor';
 // import { RegisterProductor } from './pages/RegisterProductor';
@@ -22,3 +22,5 @@ function App() {
 }
 
 export default App;
+
+//Solo importa el <AppRouter /> y los <ContextProviders>
