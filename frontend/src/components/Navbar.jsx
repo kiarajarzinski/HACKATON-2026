@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RoleModal } from './RoleModal';
+import { RoleModal } from '../components/auth/RoleModal';
 
 export const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -6,6 +6,56 @@ datasource db {
   provider = "postgresql"
 }
 
+model Usuario {
+  id                String          @id @default(uuid())
+  email             String          @unique
+  password          String
+  rol               RolUsuario
+  createdAt         DateTime        @default(now())
+  emailVerificado   Boolean         @default(false)
+  tokenExpiracion   DateTime?
+  tokenVerificacion String?         @unique
+  consumidor        Consumidor?
+  emprendimiento    Emprendimiento?
+  productor         Productor?
+
+  @@map("usuarios")
+}
+
+model Emprendimiento {
+  id                String              @id @default(uuid())
+  nombreCuenta      String
+  nombreResponsable String
+  telefono          String
+  rubro             RubroEmprendimiento
+  usuarioId         String              @unique
+  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("emprendimientos")
+}
+
+model Consumidor {
+  id        String  @id @default(uuid())
+  nombre    String
+  apellido  String
+  usuarioId String  @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("consumidores")
+}
+
+model Productor {
+  id                  String              @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  tipoEstablecimiento TipoEstablecimiento
+  usuarioId           String              @unique
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("productores")
+}
+
 enum RolUsuario {
   PRODUCTOR
   EMPRENDIMIENTO
@@ -26,53 +76,4 @@ enum TipoEstablecimiento {
   CAMPO_PARCELA
   APIARIO_MONTE
   FINCA_FRUTALES
-}
-
-model Usuario {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  password  String // Se almacena el hash cifrado
-  rol       RolUsuario
-  createdAt DateTime   @default(now())
-
-  // Relaciones 1 a 1 estandarizadas en camelCase y singular
-  consumidor     Consumidor?
-  emprendimiento Emprendimiento?
-  productor      Productor?
-
-  @@map("usuarios")
-}
-
-model Emprendimiento {
-  id                String              @id @default(uuid())
-  nombreCuenta      String
-  nombreResponsable String
-  telefono          String
-  rubro             RubroEmprendimiento
-  usuarioId         String              @unique
-  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("emprendimientos")
-}
-
-model Consumidor {
-  id        String  @id @default(uuid()) // Corregido: agregado @default(uuid())
-  nombre    String
-  apellido  String
-  usuarioId String  @unique
-  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("consumidores")
-}
-
-model Productor {
-  id                  String              @id @default(uuid()) // Corregido: agregado @default(uuid())
-  nombreCuenta        String
-  nombreResponsable   String
-  telefono            String
-  tipoEstablecimiento TipoEstablecimiento
-  usuarioId           String              @unique
-  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("productores")
 }

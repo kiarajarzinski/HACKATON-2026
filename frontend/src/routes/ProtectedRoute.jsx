@@ -1,0 +1,1 @@
+//Componente que patea al usuario al Login si no tiene permis
