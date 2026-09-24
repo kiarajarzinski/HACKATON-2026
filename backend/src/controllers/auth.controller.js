@@ -1,53 +1,43 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { prisma } from '../config/prisma.js';
+import * as authService from '../services/auth.service.js';
 
 export const register = async (req, res) => {
   try {
     const { email, password, rol, datosPerfil } = req.body;
 
-    const usuarioExistente = await prisma.usuario.findUnique({ where: { email } });
-    if (usuarioExistente) {
-      return res.status(400).json({ error: 'El email ya está registrado' });
+    const result = await authService.registerUser({ email, password, rol, datosPerfil });
+
+    res.status(201).json({ 
+      mensaje: 'Registro exitoso',
+      token: result.token, 
+      rol: result.rol,
+      id: result.id
+    });
+  } catch (error) {
+    console.error('Error en register:', error.message);
+    const statusCode = error.message.includes('obligatorios') || error.message.includes('registrado') || error.message.includes('Rol') ? 400 : 500;
+    res.status(statusCode).json({ error: error.message || 'Error interno del servidor' });
+  }
+};
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const result = await authService.loginUser({ email, password });
 
-    const nuevoUsuario = await prisma.$transaction(async (tx) => {
-      const user = await tx.usuario.create({
-        data: { email, password: hashedPassword, rol }
-      });
-    
-      if (rol === 'PRODUCTOR') {
-        await tx.productor.create({
-          data: { ...datosPerfil, usuarioId: user.id }
-        });
-      } else if (rol === 'EMPRENDIMIENTO') {
-        await tx.emprendimiento.create({
-          data: { ...datosPerfil, usuarioId: user.id }
-        });
-      } else if (rol === 'CONSUMIDOR') {
-        await tx.consumidor.create({
-          data: { ...datosPerfil, usuarioId: user.id }
-        });
-      } else {
-        throw new Error("Rol no válido");
-      }
-
-      return user;
+    res.status(200).json({
+      mensaje: 'Inicio de sesión exitoso',
+      token: result.token,
+      rol: result.rol,
+      id: result.id
     });
-
-
-    const token = jwt.sign(
-      { id: nuevoUsuario.id, rol: nuevoUsuario.rol }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '1d' }
-    );
-
-    res.status(201).json({ token, rol: nuevoUsuario.rol, mensaje: 'Registro exitoso' });
   } catch (error) {
-    console.error('Error en register:', error);
-    res.status(500).json({ error: 'Error en el servidor al registrar el usuario' });
+    console.error('Error en login:', error.message);
+    const statusCode = error.message === 'Credenciales inválidas' ? 401 : 500;
+    res.status(statusCode).json({ error: error.message || 'Error interno del servidor' });
   }
 };
