@@ -1,0 +1,1 @@
+//# Métricas generales de EcoNexo.

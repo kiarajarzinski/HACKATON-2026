@@ -1,0 +1,1 @@
+// Guarda el TOKEN, el ID del usuario y SU ROL.
