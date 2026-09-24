@@ -22,5 +22,3 @@ function App() {
 }
 
 export default App;
-
-//Solo importa el <AppRouter /> y los <ContextProviders>

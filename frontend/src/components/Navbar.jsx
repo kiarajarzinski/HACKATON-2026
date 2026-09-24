@@ -1,29 +1,28 @@
-import { useState } from 'react';
-import { RoleModal } from './RoleModal';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Home } from './pages/public/Home';
 
-export const Navbar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+// TODO: Crear estos componentes luego en la carpeta pages/
+// import { RegisterConsumidor } from './pages/RegisterConsumidor';
+// import { RegisterProductor } from './pages/RegisterProductor';
+// import { RegisterEmprendimiento } from './pages/RegisterEmprendimiento';
 
+function App() {
   return (
-    <nav className="p-4 bg-gray-100 flex justify-between items-center">
-      <h1 className="font-bold text-xl">Mi Hackathon</h1>
-      
-      <div>
-        <button className="mr-4 text-blue-600 font-semibold">Iniciar Sesión</button>
-        {/* Este botón abre el modal */}
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded font-bold"
-        >
-          Registrarse
-        </button>
-      </div>
-
-      {/* Renderizamos el modal, pasándole el estado y la función para cerrarlo */}
-      <RoleModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
-    </nav>
+    <BrowserRouter>
+      <Routes>
+        {/* Renderizamos únicamente el componente Home para probar la vista */}
+        <Route path="/" element={<Home />} />
+        
+        {/* Rutas temporales comentadas para que no tiren error hasta que tu compañera termine */}
+        {/* 
+        <Route path="/register/consumidor" element={<h2>Registro Consumidor (Próximamente)</h2>} />
+        <Route path="/register/productor" element={<h2>Registro Productor (Próximamente)</h2>} />
+        <Route path="/register/emprendimiento" element={<h2>Registro Emprendimiento (Próximamente)</h2>} /> 
+        */}
+      </Routes>
+    </BrowserRouter>
   );
-};
+}
+
+export default App;
