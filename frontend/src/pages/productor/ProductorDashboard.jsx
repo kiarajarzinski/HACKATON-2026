@@ -1,6 +1,7 @@
 import { Navbar } from '../../components/auth/Navbar';
 import { LocationModal } from '../../components/common/LocationModal';
 import { FeedProductos } from '../../components/common/FeedProductos';
+import { MapaDashboard } from '../../components/common/MapaDashboard';
 
 export const ProductorDashboard = () => {
   return (
@@ -11,7 +12,7 @@ export const ProductorDashboard = () => {
         
         {/* Aquí inyectamos el Feed */}
         <FeedProductos titulo="Insumos de otros Productores de la región" />
-
+        <MapaDashboard />
         <LocationModal />
       </div>
     </div>

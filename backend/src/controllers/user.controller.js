@@ -91,3 +91,36 @@ export const actualizarFotoPerfil = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor al actualizar la foto' });
   }
 };
+
+export const getMapLocations = async (req, res) => {
+  try {
+    const { id, rol } = req.usuario;
+    let locations = [];
+
+    if (rol === 'CONSUMIDOR') {
+      // Los consumidores ven a los Emprendimientos
+      const emprendimientos = await prisma.emprendimiento.findMany({
+        where: { latitud: { not: null }, longitud: { not: null } },
+        select: { id: true, nombreCuenta: true, latitud: true, longitud: true, rubro: true }
+      });
+      locations = emprendimientos.map(e => ({ ...e, tipo: 'EMPRENDIMIENTO' }));
+      
+    } else if (rol === 'EMPRENDIMIENTO' || rol === 'PRODUCTOR') {
+      // Emprendimientos y Productores ven a los Productores
+      const productores = await prisma.productor.findMany({
+        where: {
+          latitud: { not: null },
+          longitud: { not: null },
+          usuarioId: { not: id } // Excluir al usuario actual de su propio mapa
+        },
+        select: { id: true, nombreCuenta: true, latitud: true, longitud: true, tipoEstablecimiento: true }
+      });
+      locations = productores.map(p => ({ ...p, tipo: 'PRODUCTOR' }));
+    }
+
+    res.status(200).json(locations);
+  } catch (error) {
+    console.error('Error al obtener ubicaciones del mapa:', error);
+    res.status(500).json({ error: 'Error al cargar los datos del mapa' });
+  }
+};

@@ -1,7 +1,7 @@
 import { Navbar } from '../../components/auth/Navbar';
 import { LocationModal } from '../../components/common/LocationModal';
 import { FeedProductos } from '../../components/common/FeedProductos';
-
+import { MapaDashboard } from '../../components/common/MapaDashboard';
 export const ConsumidorDashboard = () => {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f6fa' }}>
@@ -11,7 +11,7 @@ export const ConsumidorDashboard = () => {
         
         {/* Aquí inyectamos el Feed */}
         <FeedProductos titulo="Productos terminados de Emprendimientos Locales" />
-
+        <MapaDashboard />
         <LocationModal />
       </div>
     </div>
