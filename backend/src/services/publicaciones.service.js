@@ -4,7 +4,6 @@ export const crearPublicacion = async (usuarioId, rol, datos) => {
   let productorId = null;
   let emprendimientoId = null;
 
-
   if (rol === 'PRODUCTOR') {
     const productor = await prisma.productor.findUnique({ where: { usuarioId } });
     if (!productor) throw new Error('Perfil de productor no encontrado');
@@ -16,7 +15,6 @@ export const crearPublicacion = async (usuarioId, rol, datos) => {
   } else {
     throw new Error('Los consumidores no pueden crear publicaciones');
   }
-
 
   const nuevaPublicacion = await prisma.publicaciones.create({
     data: {
@@ -85,11 +83,12 @@ export const obtenerFeed = async (usuarioId, rol) => {
     whereClause.emprendimientoId = { not: null };
   }
 
+  // Aquí está el bloque correcto con los teléfonos integrados
   const publicaciones = await prisma.publicaciones.findMany({
     where: whereClause,
     include: {
-      productores: { select: { nombreCuenta: true, localidad: true } },
-      emprendimientos: { select: { nombreCuenta: true, localidad: true } },
+      productores: { select: { nombreCuenta: true, localidad: true, telefono: true } }, 
+      emprendimientos: { select: { nombreCuenta: true, localidad: true, telefono: true } }, 
       categorias_produccion: { select: { nombre: true } }
     },
     orderBy: { createdAt: 'desc' } 
