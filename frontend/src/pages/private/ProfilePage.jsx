@@ -2,21 +2,41 @@ import { useEffect, useState, useContext } from 'react';
 import api from '../../api/axiosConfig';
 import { Navbar } from '../../components/auth/Navbar';
 import { AuthContext } from '../../context/AuthContext';
-import { LocationModal } from '../../components/common/LocationModal'; // <-- IMPORTAMOS EL MODAL
+import { LocationModal } from '../../components/common/LocationModal';
 
 export const ProfilePage = () => {
   const { user } = useContext(AuthContext);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Estado para controlar el modal del mapa
   const [showLocationModal, setShowLocationModal] = useState(false);
   
-  // Estados para el CRUD de publicaciones
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [loadingPub, setLoadingPub] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [pubData, setPubData] = useState({ titulo: '', descripcion: '', precio: '', unidadMedida: 'Kg', stock: '', pedidoMinimo: '1' });
+  const [fotoFile, setFotoFile] = useState(null);
+
+  // Estado para la foto de perfil
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('foto', file);
+
+    setUploadingAvatar(true);
+    try {
+      await api.put('/users/profile-picture', formData);
+      fetchProfile(); // Recargamos el perfil
+    } catch (error) {
+      alert(error.response?.data?.error || 'Error al subir la foto de perfil');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -36,14 +56,33 @@ export const ProfilePage = () => {
   const handleSubmitPublicacion = async (e) => {
     e.preventDefault();
     setLoadingPub(true);
+    
+    const formData = new FormData();
+    formData.append('titulo', pubData.titulo);
+    formData.append('descripcion', pubData.descripcion);
+    formData.append('precio', pubData.precio);
+    formData.append('unidadMedida', pubData.unidadMedida);
+    formData.append('stock', pubData.stock);
+    formData.append('pedidoMinimo', pubData.pedidoMinimo);
+  
+    if (fotoFile) {
+      formData.append('foto', fotoFile);
+    }
+
     try {
-      if (editingId) await api.put(`/publicaciones/${editingId}`, pubData);
-      else await api.post('/publicaciones', pubData);
+      if (editingId) {
+        await api.put(`/publicaciones/${editingId}`, formData);
+      } else {
+        await api.post('/publicaciones', formData);
+      }
       
       handleCerrarFormulario();
       fetchProfile();
-    } catch (error) { alert(error.response?.data?.error || 'Error al procesar la publicación'); } 
-    finally { setLoadingPub(false); }
+    } catch (error) { 
+      alert(error.response?.data?.error || 'Error al procesar la publicación'); 
+    } finally { 
+      setLoadingPub(false); 
+    }
   };
 
   const handleEliminar = async (id) => {
@@ -60,6 +99,7 @@ export const ProfilePage = () => {
   const handleCerrarFormulario = () => {
     setMostrarFormulario(false); setEditingId(null);
     setPubData({ titulo: '', descripcion: '', precio: '', unidadMedida: 'Kg', stock: '', pedidoMinimo: '1' });
+    setFotoFile(null);
   };
 
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando perfil...</div>;
@@ -68,7 +108,6 @@ export const ProfilePage = () => {
   const { rol, consumidor, emprendimiento, productor } = profileData;
   const misPublicaciones = rol === 'PRODUCTOR' ? productor?.publicaciones : emprendimiento?.publicaciones;
 
-  // Variables para enviar datos previos al mapa
   const perfilActivo = rol === 'CONSUMIDOR' ? consumidor : rol === 'PRODUCTOR' ? productor : emprendimiento;
 
   return (
@@ -80,7 +119,44 @@ export const ProfilePage = () => {
         {/* COLUMNA IZQUIERDA: Información del Perfil */}
         <div style={{ flex: '1', minWidth: '300px', backgroundColor: 'white', padding: '2rem', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', height: 'fit-content' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#bdc3c7', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>📷</div>
+            
+            {/* INICIO ZONA DE AVATAR INTERACTIVA */}
+            <label htmlFor="avatarUpload" style={{ cursor: rol !== 'CONSUMIDOR' ? 'pointer' : 'default', display: 'inline-block' }}>
+              <div style={{ 
+                width: '120px', height: '120px', borderRadius: '50%', backgroundColor: '#bdc3c7', margin: '0 auto 10px', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', overflow: 'hidden',
+                border: '4px solid #ecf0f1', position: 'relative'
+              }}>
+                {uploadingAvatar ? (
+                  <span style={{ fontSize: '1rem', color: 'white', fontWeight: 'bold' }}>⏳</span>
+                ) : (rol === 'PRODUCTOR' && productor?.fotoPerfil) ? (
+                  <img src={productor.fotoPerfil} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (rol === 'EMPRENDIMIENTO' && emprendimiento?.fotoPerfil) ? (
+                  <img src={emprendimiento.fotoPerfil} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  '📷'
+                )}
+              </div>
+              
+              {rol !== 'CONSUMIDOR' && (
+                <div style={{ fontSize: '12px', color: '#3498db', fontWeight: 'bold', marginBottom: '15px' }}>
+                  ✏️ Cambiar foto
+                </div>
+              )}
+            </label>
+
+            {rol !== 'CONSUMIDOR' && (
+              <input 
+                type="file" 
+                id="avatarUpload" 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+                onChange={handleAvatarChange} 
+                disabled={uploadingAvatar} 
+              />
+            )}
+            {/* FIN ZONA DE AVATAR */}
+
             <h2 style={{ margin: 0 }}>
               {rol === 'CONSUMIDOR' ? `${consumidor?.nombre} ${consumidor?.apellido}` : ''}
               {rol === 'EMPRENDIMIENTO' ? emprendimiento?.nombreCuenta : ''}
@@ -180,6 +256,16 @@ export const ProfilePage = () => {
                     <input type="number" name="stock" placeholder="Stock disponible" value={pubData.stock} onChange={handlePubChange} required style={inputStyle} step="0.01" />
                   </div>
                   <textarea name="descripcion" placeholder="Descripción del producto..." value={pubData.descripcion} onChange={handlePubChange} style={{...inputStyle, width: '100%', height: '80px', marginBottom: '10px'}} />
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ fontSize: '14px', display: 'block', marginBottom: '5px' }}>Foto del producto:</label>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => setFotoFile(e.target.files[0])} 
+                      style={{ padding: '5px', width: '100%' }}
+                    />
+                    {editingId && <small style={{ color: '#7f8c8d' }}>Sube una foto solo si deseas reemplazar la actual.</small>}
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
                     <label style={{ fontSize: '14px' }}>Pedido Mínimo:</label>
                     <input type="number" name="pedidoMinimo" value={pubData.pedidoMinimo} onChange={handlePubChange} style={{...inputStyle, width: '100px', margin: 0}} step="0.01" />
@@ -199,6 +285,13 @@ export const ProfilePage = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
                   {misPublicaciones.map(pub => (
                     <div key={pub.id} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '15px', position: 'relative' }}>
+                      {pub.fotos && pub.fotos.length > 0 && (
+                      <img 
+                        src={pub.fotos[0]} 
+                        alt={pub.titulo} 
+                        style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px 8px 0 0', marginBottom: '10px' }} 
+                      />
+                    )}
                       <span style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: pub.activo ? '#2ecc71' : '#e74c3c', width: '12px', height: '12px', borderRadius: '50%' }} title={pub.activo ? 'Activo' : 'Pausado'} />
                       <h4 style={{ margin: '0 0 10px 0', paddingRight: '20px' }}>{pub.titulo}</h4>
                       <p style={{ margin: '5px 0', color: '#7f8c8d', fontSize: '13px', height: '40px', overflow: 'hidden' }}>{pub.descripcion || 'Sin descripción'}</p>
@@ -220,7 +313,6 @@ export const ProfilePage = () => {
         </div>
       </div>
 
-      {/* MODAL CONTROLADO */}
       {showLocationModal && (
         <LocationModal 
           forceOpen={true}

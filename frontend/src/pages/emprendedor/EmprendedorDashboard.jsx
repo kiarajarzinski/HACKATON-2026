@@ -1,14 +1,19 @@
-import { Navbar } from "../../components/auth/Navbar";
-import { LocationModal } from "../../components/common/LocationModal";
+import { Navbar } from '../../components/auth/Navbar';
+import { LocationModal } from '../../components/common/LocationModal';
+import { FeedProductos } from '../../components/common/FeedProductos';
 
 export const EmprendedorDashboard = () => {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f6fa' }}> 
-      
-      <Navbar /> 
-      <h1>Panel del Emprendedor</h1>
-      <p>Bienvenido a tu dashboard. Aquí podrás ver tus compras.</p>
-      <LocationModal />
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f6fa' }}>
+      <Navbar />
+      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+        <h1 style={{ marginTop: 0 }}>Panel del Emprendimiento</h1>
+        
+        {/* Aquí inyectamos el Feed */}
+        <FeedProductos titulo="Materia prima disponible de Productores" />
+
+        <LocationModal />
+      </div>
     </div>
   );
 };
