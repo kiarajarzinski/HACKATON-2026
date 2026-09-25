@@ -1,0 +1,18 @@
+import React from 'react';
+
+export const LlamadoFinal = () => {
+  return (
+    <section className="container-max">
+      <div className="final-cta-container">
+        <h2 className="final-cta-title">¿Buscás productos listos para consumir?</h2>
+        <p style={{fontSize: '1.125rem', marginBottom: '32px', opacity: 0.9}}>
+          Apoya la economía circular comprando directamente a los emprendedores de tu ciudad. Filtra por productos Sin TACC, Orgánicos o Vegetales.
+        </p>
+        <a href="#vitrina" className="navbar-btn" style={{padding: '16px 32px', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '8px'}}>
+          <span className="material-symbols-outlined">explore</span>
+          Explorar Productos y Registrarme
+        </a>
+      </div>
+    </section>
+  );
+};

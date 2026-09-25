@@ -50,9 +50,6 @@ model Consumidor {
   nombre    String
   apellido  String
   usuarioId String  @unique
-  latitud   Float?
-  longitud  Float?
-  localidad String?
   usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("consumidores")
@@ -177,13 +174,4 @@ enum TipoEstablecimiento {
   CAMPO_PARCELA
   APIARIO_MONTE
   FINCA_FRUTALES
-}
-
-enum CategoriaEnum {
-  AGRICULTURA_EXTENSIVA
-  FRUTIHORTICOLA
-  GANADERIA
-  APICULTURA
-  PISCICULTURA
-  FORESTAL
 }
