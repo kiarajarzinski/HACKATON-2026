@@ -6,10 +6,162 @@ datasource db {
   provider = "postgresql"
 }
 
+model Usuario {
+  id                String          @id @default(uuid())
+  email             String          @unique
+  password          String
+  rol               RolUsuario
+  createdAt         DateTime        @default(now())
+  emailVerificado   Boolean         @default(false)
+  tokenExpiracion   DateTime?
+  tokenVerificacion String?         @unique
+  activo            Boolean         @default(true)
+  consumidor        Consumidor?
+  emprendimiento    Emprendimiento?
+  pedidos           pedidos[]
+  productor         Productor?
+  reportes          reportes[]
+
+  @@map("usuarios")
+}
+
+model Emprendimiento {
+  id                  String              @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  rubro               RubroEmprendimiento
+  usuarioId           String              @unique
+  latitud             Float?
+  longitud            Float?
+  localidad           String?
+  direccionReferencia String?
+  fotoPerfil          String?
+  fotosGaleria        String[]            @default([])
+  historia            String?
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  publicaciones       publicaciones[]
+
+  @@map("emprendimientos")
+}
+
+model Consumidor {
+  id        String  @id @default(uuid())
+  nombre    String
+  apellido  String
+  usuarioId String  @unique
+  latitud   Float?
+  longitud  Float?
+  localidad String?
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("consumidores")
+}
+
+model Productor {
+  id                  String                  @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  tipoEstablecimiento TipoEstablecimiento
+  usuarioId           String                  @unique
+  latitud             Float?
+  longitud            Float?
+  localidad           String?
+  direccionReferencia String?
+  fotoPerfil          String?
+  fotosGaleria        String[]                @default([])
+  historia            String?
+  categorias          ProductorHasCategoria[]
+  usuario             Usuario                 @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  publicaciones       publicaciones[]
+
+  @@map("productores")
+}
+
+model CategoriaProduccion {
+  id            String                  @id @default(dbgenerated("(gen_random_uuid())::text"))
+  codigo        CategoriaEnum           @unique
+  nombre        String
+  descripcion   String?
+  productores   ProductorHasCategoria[]
+  publicaciones publicaciones[]
+
+  @@map("categorias_produccion")
+}
+
+model ProductorHasCategoria {
+  id               String              @id @default(dbgenerated("(gen_random_uuid())::text"))
+  productorId      String
+  categoriaId      String
+  enTemporada      Boolean?            @default(true)
+  descripcionCorta String?
+  categoria        CategoriaProduccion @relation(fields: [categoriaId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  productor        Productor           @relation(fields: [productorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([productorId, categoriaId])
+  @@map("productor_categorias")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pedidos {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicacionId      String        @db.Uuid
+  compradorUsuarioId String?
+  compradorNombre    String?
+  compradorTelefono  String?
+  cantidad           Decimal       @db.Decimal(10, 2)
+  totalEstimado      Decimal       @db.Decimal(12, 2)
+  estado             String        @default("PENDIENTE")
+  createdAt          DateTime?     @default(now()) @db.Timestamptz(6)
+  usuarios           Usuario?      @relation(fields: [compradorUsuarioId], references: [id], onUpdate: NoAction)
+  publicaciones      publicaciones @relation(fields: [publicacionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model publicaciones {
+  id                    String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productorId           String?
+  emprendimientoId      String?
+  categoriaProduccionId String?
+  titulo                String
+  descripcion           String?
+  precio                Decimal              @db.Decimal(12, 2)
+  unidadMedida          String
+  stock                 Decimal              @default(0) @db.Decimal(10, 2)
+  pedidoMinimo          Decimal?             @default(1) @db.Decimal(10, 2)
+  fotos                 String[]             @default([])
+  esAlertaRadar         Boolean?             @default(false)
+  activo                Boolean?             @default(true)
+  createdAt             DateTime?            @default(now()) @db.Timestamptz(6)
+  precioOferta          Decimal?             @db.Decimal(12, 2)
+  fechaFinRadar         DateTime?            @db.Timestamptz(6)
+  motivoAlerta          String?
+  pedidos               pedidos[]
+  categorias_produccion CategoriaProduccion? @relation(fields: [categoriaProduccionId], references: [id], onUpdate: NoAction)
+  emprendimientos       Emprendimiento?      @relation(fields: [emprendimientoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  productores           Productor?           @relation(fields: [productorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reportes              reportes[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reportes {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicacionId String?        @db.Uuid
+  usuarioId     String?
+  motivo        String
+  detalle       String?
+  resuelto      Boolean        @default(false)
+  createdAt     DateTime?      @default(now()) @db.Timestamptz(6)
+  publicaciones publicaciones? @relation(fields: [publicacionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios      Usuario?       @relation(fields: [usuarioId], references: [id], onUpdate: NoAction)
+}
+
 enum RolUsuario {
   PRODUCTOR
   EMPRENDIMIENTO
   CONSUMIDOR
+  ADMIN
 }
 
 enum RubroEmprendimiento {
@@ -28,51 +180,11 @@ enum TipoEstablecimiento {
   FINCA_FRUTALES
 }
 
-model Usuario {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  password  String // Se almacena el hash cifrado
-  rol       RolUsuario
-  createdAt DateTime   @default(now())
-
-  // Relaciones 1 a 1 estandarizadas en camelCase y singular
-  consumidor     Consumidor?
-  emprendimiento Emprendimiento?
-  productor      Productor?
-
-  @@map("usuarios")
-}
-
-model Emprendimiento {
-  id                String              @id @default(uuid())
-  nombreCuenta      String
-  nombreResponsable String
-  telefono          String
-  rubro             RubroEmprendimiento
-  usuarioId         String              @unique
-  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("emprendimientos")
-}
-
-model Consumidor {
-  id        String  @id @default(uuid()) // Corregido: agregado @default(uuid())
-  nombre    String
-  apellido  String
-  usuarioId String  @unique
-  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("consumidores")
-}
-
-model Productor {
-  id                  String              @id @default(uuid()) // Corregido: agregado @default(uuid())
-  nombreCuenta        String
-  nombreResponsable   String
-  telefono            String
-  tipoEstablecimiento TipoEstablecimiento
-  usuarioId           String              @unique
-  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("productores")
+enum CategoriaEnum {
+  AGRICULTURA_EXTENSIVA
+  FRUTIHORTICOLA
+  GANADERIA
+  APICULTURA
+  PISCICULTURA
+  FORESTAL
 }
