@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import '../../styles/verification.css';
 
 export const Verificacion = () => {
   const { verifyCode } = useContext(AuthContext);
@@ -29,26 +30,30 @@ export const Verificacion = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', textAlign: 'center' }}>
-      <h2>Verifica tu Email</h2>
-      <p>Hemos enviado un código de 6 dígitos a <b>{email}</b></p>
-      
-      {error && <div style={{ color: 'red', margin: '10px 0' }}>{error}</div>}
-      
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          maxLength="6"
-          placeholder="Ej: 123456"
-          value={codigo}
-          onChange={(e) => setCodigo(e.target.value)}
-          required
-          style={{ padding: '10px', fontSize: '18px', letterSpacing: '2px', width: '100%', textAlign: 'center' }}
-        />
-        <button type="submit" style={{ marginTop: '20px', padding: '10px 20px', width: '100%' }}>
-          Verificar y Entrar
-        </button>
-      </form>
+    <div className="verification-page">
+      <div className="verification-card">
+        <h2>Verifica tu Email</h2>
+        <p>
+          Hemos enviado un código de 6 dígitos a <span>{email}</span>
+        </p>
+
+        {error && <div className="verification-error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="verification-form">
+          <input
+            type="text"
+            maxLength="6"
+            placeholder="Ej: 123456"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+            required
+          />
+
+          <button type="submit">
+            Verificar y Entrar
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
