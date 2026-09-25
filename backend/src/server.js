@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import publicacionesRoutes from './routes/publicaciones.routes.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/publicaciones', publicacionesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint no encontrado' });

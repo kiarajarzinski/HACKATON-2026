@@ -4,18 +4,19 @@ export const getProfile = async (req, res) => {
   try {
     const { id } = req.usuario;
 
-    const user = await prisma.usuario.findUnique({
+const user = await prisma.usuario.findUnique({
       where: { id },
       include: {
         consumidor: true,
-        emprendimiento: true,
+        emprendimiento: {
+          include: { publicaciones: true } 
+        },
         productor: {
           include: {
             productor_categorias: {
-              include: {
-                categorias_produccion: true
-              }
-            }
+              include: { categorias_produccion: true }
+            },
+            publicaciones: true 
           }
         }
       }
