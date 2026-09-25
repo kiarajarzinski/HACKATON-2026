@@ -37,10 +37,12 @@ export const AuthPage = () => {
           Registrarse
         </button>
       </div>
-
-      {/* Renderizado condicional del formulario correspondiente */}
       <div className="form-container">
-        {activeView === 'login' ? <LoginForm /> : <RegisterForm />}
+        {activeView === 'login' ? (
+          <LoginForm />
+        ) : (
+          <RegisterForm onRegisterSuccess={() => setActiveView('login')} />
+        )}
       </div>
       
     </div>

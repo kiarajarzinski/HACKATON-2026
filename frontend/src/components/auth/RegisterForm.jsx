@@ -1,8 +1,6 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
-// Lista constante de categorías para generar los checkboxes dinámicamente
 const OPCIONES_CATEGORIAS = [
   { value: 'AGRICULTURA_EXTENSIVA', label: 'Agricultura Extensiva' },
   { value: 'FRUTIHORTICOLA', label: 'Frutihortícola' },
@@ -12,9 +10,8 @@ const OPCIONES_CATEGORIAS = [
   { value: 'FORESTAL', label: 'Forestal' }
 ];
 
-export const RegisterForm = () => {
+export const RegisterForm = ({ onRegisterSuccess }) => {
   const { register } = useContext(AuthContext);
-  const navigate = useNavigate();
   
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -29,7 +26,6 @@ export const RegisterForm = () => {
     if (name === 'rol') {
       if (value === 'CONSUMIDOR') setPerfilData({ nombre: '', apellido: '' });
       if (value === 'EMPRENDIMIENTO') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', rubro: 'ALIMENTOS_CONSERVAS' });
-      // Agregamos 'categorias' inicializado como un array vacío
       if (value === 'PRODUCTOR') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', tipoEstablecimiento: 'CHACRA_FAMILIAR', categorias: [] });
     }
   };
@@ -38,7 +34,6 @@ export const RegisterForm = () => {
     setPerfilData({ ...perfilData, [e.target.name]: e.target.value });
   };
 
-  // Nuevo controlador específico para manejar checkboxes múltiples
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
     let nuevasCategorias = [...perfilData.categorias];
@@ -57,21 +52,20 @@ export const RegisterForm = () => {
     setError(null);
     setSuccess(null);
 
-    // Validación extra en frontend para Productor
     if (baseData.rol === 'PRODUCTOR' && perfilData.categorias.length === 0) {
       setError('Debes seleccionar al menos una categoría de producción.');
       return;
     }
 
     try {
-      const res = await register(baseData.email, baseData.password, baseData.rol, perfilData);
+      await register(baseData.email, baseData.password, baseData.rol, perfilData);
       
-      setSuccess('¡Registro exitoso! Redirigiendo...');
+      setSuccess('¡Registro exitoso! Redirigiendo al inicio de sesión...');
       
       setTimeout(() => {
-        if (res.rol === 'CONSUMIDOR') navigate('/consumidor');
-        if (res.rol === 'EMPRENDIMIENTO') navigate('/emprendedor');
-        if (res.rol === 'PRODUCTOR') navigate('/productor');
+        if (onRegisterSuccess) {
+          onRegisterSuccess();
+        }
       }, 1500);
 
     } catch (err) {
