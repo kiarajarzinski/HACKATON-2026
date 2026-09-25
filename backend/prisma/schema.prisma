@@ -17,19 +17,28 @@ model Usuario {
   tokenVerificacion String?         @unique
   consumidor        Consumidor?
   emprendimiento    Emprendimiento?
+  pedidos           pedidos[]
   productor         Productor?
 
   @@map("usuarios")
 }
 
 model Emprendimiento {
-  id                String              @id @default(uuid())
-  nombreCuenta      String
-  nombreResponsable String
-  telefono          String
-  rubro             RubroEmprendimiento
-  usuarioId         String              @unique
-  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id                  String              @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  rubro               RubroEmprendimiento
+  usuarioId           String              @unique
+  latitud             Float?
+  longitud            Float?
+  localidad           String?
+  direccionReferencia String?
+  fotoPerfil          String?
+  fotosGaleria        String[]            @default([])
+  historia            String?
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  publicaciones       publicaciones[]
 
   @@map("emprendimientos")
 }
@@ -39,6 +48,9 @@ model Consumidor {
   nombre    String
   apellido  String
   usuarioId String  @unique
+  latitud   Float?
+  longitud  Float?
+  localidad String?
   usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("consumidores")
@@ -51,8 +63,16 @@ model Productor {
   telefono             String
   tipoEstablecimiento  TipoEstablecimiento
   usuarioId            String                 @unique
+  latitud              Float?
+  longitud             Float?
+  localidad            String?
+  direccionReferencia  String?
+  fotoPerfil           String?
+  fotosGaleria         String[]               @default([])
+  historia             String?
   productor_categorias productor_categorias[]
   usuario              Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  publicaciones        publicaciones[]
 
   @@map("productores")
 }
@@ -64,6 +84,7 @@ model categorias_produccion {
   nombre               String
   descripcion          String?
   productor_categorias productor_categorias[]
+  publicaciones        publicaciones[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -77,6 +98,43 @@ model productor_categorias {
   productores           Productor             @relation(fields: [productorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([productorId, categoriaId])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pedidos {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicacionId      String        @db.Uuid
+  compradorUsuarioId String?
+  compradorNombre    String?
+  compradorTelefono  String?
+  cantidad           Decimal       @db.Decimal(10, 2)
+  totalEstimado      Decimal       @db.Decimal(12, 2)
+  estado             String        @default("PENDIENTE")
+  createdAt          DateTime?     @default(now()) @db.Timestamptz(6)
+  usuarios           Usuario?      @relation(fields: [compradorUsuarioId], references: [id], onUpdate: NoAction)
+  publicaciones      publicaciones @relation(fields: [publicacionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model publicaciones {
+  id                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productorId           String?
+  emprendimientoId      String?
+  categoriaProduccionId String?
+  titulo                String
+  descripcion           String?
+  precio                Decimal                @db.Decimal(12, 2)
+  unidadMedida          String
+  stock                 Decimal                @default(0) @db.Decimal(10, 2)
+  pedidoMinimo          Decimal?               @default(1) @db.Decimal(10, 2)
+  fotos                 String[]               @default([])
+  esAlertaRadar         Boolean?               @default(false)
+  activo                Boolean?               @default(true)
+  createdAt             DateTime?              @default(now()) @db.Timestamptz(6)
+  pedidos               pedidos[]
+  categorias_produccion categorias_produccion? @relation(fields: [categoriaProduccionId], references: [id], onUpdate: NoAction)
+  emprendimientos       Emprendimiento?        @relation(fields: [emprendimientoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  productores           Productor?             @relation(fields: [productorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 enum RolUsuario {

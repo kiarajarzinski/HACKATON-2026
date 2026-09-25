@@ -1,52 +1,46 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../config/prisma.js';
+import { enviarCorreoVerificacion } from '../utils/mailer.js';
+import { enviarCorreoRecuperacion } from '../utils/mailer.js';
 
 export const registerUser = async ({ email, password, rol, datosPerfil }) => {
   const usuarioExistente = await prisma.usuario.findUnique({ where: { email } });
-  if (usuarioExistente) {
-    throw new Error('El email ya está registrado');
-  }
+  if (usuarioExistente) throw new Error('El email ya está registrado');
 
   validarDatosPerfil(rol, datosPerfil);
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
+  const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+  const tokenVerificacion = `${codigo}-${Date.now()}`;
+
   const nuevoUsuario = await prisma.$transaction(async (tx) => {
     const user = await tx.usuario.create({
-      data: { email, password: hashedPassword, rol }
+      data: { email, password: hashedPassword, rol, tokenVerificacion, emailVerificado: false }
     });
     
     if (rol === 'PRODUCTOR') {
-      // Extraemos las categorías del array enviado por el frontend
       const { categorias, ...restoDatos } = datosPerfil;
 
-      // Buscamos los IDs de las categorías en la base de datos usando sus códigos
       const categoriasDb = await tx.categorias_produccion.findMany({
-        where: {
-          codigo: { in: categorias }
-        }
+        where: { codigo: { in: categorias } }
       });
 
       if (categoriasDb.length !== categorias.length) {
-        throw new Error('Una o más categorías seleccionadas no son válidas o no existen en la base de datos.');
+        throw new Error('Categorías seleccionadas no válidas');
       }
 
-      // Creamos el Productor y sus relaciones en la tabla intermedia productor_categorias
       await tx.productor.create({
         data: {
           ...restoDatos,
           usuarioId: user.id,
           productor_categorias: {
-            create: categoriasDb.map(cat => ({
-              categoriaId: cat.id
-              // enTemporada tomará el valor por defecto (true) definido en el schema
-            }))
+            create: categoriasDb.map(cat => ({ categoriaId: cat.id }))
           }
         }
       });
-
     } else if (rol === 'EMPRENDIMIENTO') {
       await tx.emprendimiento.create({
         data: { ...datosPerfil, usuarioId: user.id }
@@ -60,16 +54,39 @@ export const registerUser = async ({ email, password, rol, datosPerfil }) => {
     return user;
   });
 
-  const token = generarToken(nuevoUsuario);
-  return { token, rol: nuevoUsuario.rol, id: nuevoUsuario.id };
+  enviarCorreoVerificacion(email, codigo);
+  return { email: nuevoUsuario.email };
 };
 
 export const loginUser = async ({ email, password }) => {
   const usuario = await prisma.usuario.findUnique({ where: { email } });
   if (!usuario) throw new Error('Credenciales inválidas');
 
+  if (!usuario.emailVerificado) throw new Error('Email no verificado');
+
   const isMatch = await bcrypt.compare(password, usuario.password);
   if (!isMatch) throw new Error('Credenciales inválidas');
+
+  const token = generarToken(usuario);
+  return { token, rol: usuario.rol, id: usuario.id };
+};
+
+export const verifyEmailUser = async (email, codigoIngresado) => {
+  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  if (!usuario) throw new Error('Usuario no encontrado');
+  if (usuario.emailVerificado) throw new Error('El email ya está verificado');
+  if (!usuario.tokenVerificacion) throw new Error('No hay código pendiente');
+
+  const codigoReal = usuario.tokenVerificacion.split('-')[0];
+
+  if (codigoReal !== codigoIngresado) {
+    throw new Error('Código de verificación incorrecto');
+  }
+
+  await prisma.usuario.update({
+    where: { email },
+    data: { emailVerificado: true, tokenVerificacion: null }
+  });
 
   const token = generarToken(usuario);
   return { token, rol: usuario.rol, id: usuario.id };
@@ -88,9 +105,8 @@ const validarDatosPerfil = (rol, datos) => {
 
   switch (rol) {
     case 'PRODUCTOR':
-      // Validamos que exista el array de categorías y no esté vacío
       if (!datos.nombreCuenta || !datos.nombreResponsable || !datos.telefono || !datos.tipoEstablecimiento || !Array.isArray(datos.categorias) || datos.categorias.length === 0) {
-        throw new Error('Faltan campos obligatorios para Productor (debe seleccionar al menos una categoría)');
+        throw new Error('Faltan campos obligatorios para Productor');
       }
       break;
     case 'EMPRENDIMIENTO':
@@ -106,4 +122,64 @@ const validarDatosPerfil = (rol, datos) => {
     default:
       throw new Error('Rol no válido');
   }
+};
+
+export const updateUserLocation = async (usuarioId, rol, datosUbicacion) => {
+  const { latitud, longitud, localidad, direccionReferencia } = datosUbicacion;
+
+  if (rol === 'CONSUMIDOR') {
+    await prisma.consumidor.update({
+      where: { usuarioId },
+      data: { latitud, longitud, localidad }
+    });
+  } else if (rol === 'EMPRENDIMIENTO') {
+    await prisma.emprendimiento.update({
+      where: { usuarioId },
+      data: { latitud, longitud, localidad, direccionReferencia }
+    });
+  } else if (rol === 'PRODUCTOR') {
+    await prisma.productor.update({
+      where: { usuarioId },
+      data: { latitud, longitud, localidad, direccionReferencia }
+    });
+  }
+  return { mensaje: 'Ubicación guardada correctamente' };
+};
+
+export const solicitarRecuperacionPassword = async (email) => {
+  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  if (!usuario) throw new Error('Usuario no encontrado');
+
+  const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiracion = new Date(Date.now() + 15 * 60000); // Expiración en 15 min
+
+  await prisma.usuario.update({
+    where: { email },
+    data: { tokenVerificacion: codigo, tokenExpiracion: expiracion }
+  });
+
+  enviarCorreoRecuperacion(email, codigo);
+  return { mensaje: 'Correo de recuperación enviado' };
+};
+
+export const restablecerPassword = async (email, codigo, nuevaPassword) => {
+  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  if (!usuario) throw new Error('Usuario no encontrado');
+  
+  if (usuario.tokenVerificacion !== codigo) throw new Error('Código incorrecto');
+  if (usuario.tokenExpiracion < new Date()) throw new Error('El código ha expirado');
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(nuevaPassword, salt);
+
+  await prisma.usuario.update({
+    where: { email },
+    data: {
+      password: hashedPassword,
+      tokenVerificacion: null,
+      tokenExpiracion: null
+    }
+  });
+
+  return { mensaje: 'Contraseña actualizada exitosamente' };
 };

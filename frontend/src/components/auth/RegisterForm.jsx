@@ -1,119 +1,173 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { RoleSelectorModal } from './RoleSelectorModal';
+
+const OPCIONES_CATEGORIAS = [
+  { value: 'AGRICULTURA_EXTENSIVA', label: 'Agricultura Extensiva' },
+  { value: 'FRUTIHORTICOLA', label: 'Frutihortícola' },
+  { value: 'GANADERIA', label: 'Ganadería' },
+  { value: 'APICULTURA', label: 'Apicultura' },
+  { value: 'PISCICULTURA', label: 'Piscicultura' },
+  { value: 'FORESTAL', label: 'Forestal' }
+];
 
 export const RegisterForm = () => {
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
   
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ 
-    fullname: '', 
-    email: '', 
-    password: '', 
-    entity: '' 
-  });
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  
+  const [baseData, setBaseData] = useState({ email: '', password: '', rol: 'CONSUMIDOR' });
+  const [perfilData, setPerfilData] = useState({ nombre: '', apellido: '' });
 
-  if (!selectedRole) {
-    return (
-      <RoleSelectorModal 
-        onSelectRole={setSelectedRole}
-        onClose={() => navigate('/')} 
-      />
-    );
-  }
+  const handleBaseChange = (e) => {
+    const { name, value } = e.target;
+    setBaseData({ ...baseData, [name]: value });
+    
+    if (name === 'rol') {
+      if (value === 'CONSUMIDOR') setPerfilData({ nombre: '', apellido: '' });
+      if (value === 'EMPRENDIMIENTO') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', rubro: 'ALIMENTOS_CONSERVAS' });
+      if (value === 'PRODUCTOR') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', tipoEstablecimiento: 'CHACRA_FAMILIAR', categorias: [] });
+    }
+  };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handlePerfilChange = (e) => {
+    setPerfilData({ ...perfilData, [e.target.name]: e.target.value });
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    let nuevasCategorias = [...perfilData.categorias];
+    
+    if (checked) {
+      nuevasCategorias.push(value);
+    } else {
+      nuevasCategorias = nuevasCategorias.filter(cat => cat !== value);
+    }
+    
+    setPerfilData({ ...perfilData, categorias: nuevasCategorias });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    setError(null);
+    setSuccess(null);
+
+    if (baseData.rol === 'PRODUCTOR' && perfilData.categorias.length === 0) {
+      setError('Debes seleccionar al menos una categoría de producción.');
+      return;
+    }
+
     try {
-      const datosPerfil = {
-        nombre: formData.fullname,
-        emprendimiento: formData.entity
-      };
+      await register(baseData.email, baseData.password, baseData.rol, perfilData);
       
-      await register(formData.email, formData.password, selectedRole, datosPerfil);
-      const destination = selectedRole === 'productor'
-        ? '/productor'
-        : selectedRole === 'emprendedor' ? '/emprendedor' : '/consumidor';
-      navigate(destination);
-    } catch (error) {
-      setError(error.message || 'Hubo un error al registrar la cuenta');
-    } finally {
-      setLoading(false);
+      setSuccess('¡Registro exitoso! Revisa tu correo...');
+      
+      setTimeout(() => {
+        navigate('/verificar', { state: { email: baseData.email } });
+      }, 1500);
+
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error en el registro');
     }
   };
 
   return (
-    <main className="split-layout">
-      {/* Mitad Narrativa (Izquierda) */}
-      <div className="narrative-section">
-        <div className="narrative-content">
-          <span className="badge-verified">Registro de Cuenta Oficial</span>
-          <h1>EcoNexo Chacras</h1>
-          <p className="narrative-kicker">RED AGROALIMENTARIA PROVINCIAL</p>
-          <div className="narrative-message">
-            <h2>El origen conecta.</h2>
-            <p>Unimos productores, emprendimientos y consumidores para construir una red más cercana, transparente y sostenible.</p>
+    <div className="register-container">
+      <h2>Crear Cuenta</h2>
+      
+      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+      {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
+      
+      <form onSubmit={handleSubmit}>
+        <fieldset>
+          <legend>Datos de la Cuenta</legend>
+          <div>
+            <label>Email:</label>
+            <input type="email" name="email" required onChange={handleBaseChange} />
           </div>
-          <p className="narrative-author">EcoNexo<br /><span>Producción local · Comercio justo · Trazabilidad</span></p>
-          <ul className="narrative-list"><li>Sin comisiones especulativas ni intermediarios</li><li>Trazabilidad de origen y logística provincial</li><li>Asistencia territorial directa vía WhatsApp</li></ul>
-        </div>
-      </div>
-
-      {/* Mitad Formulario (Derecha) */}
-      <div className="form-section">
-        <div className="form-container">
-          <div className="role-indicator">
-            <span>Rol seleccionado: <strong>{selectedRole}</strong></span>
-            <button type="button" onClick={() => setSelectedRole(null)} className="btn-link">(Cambiar)</button>
+          <div>
+            <label>Contraseña:</label>
+            <input type="password" name="password" required onChange={handleBaseChange} />
           </div>
+          <div>
+            <label>Tipo de Cuenta:</label>
+            <select name="rol" value={baseData.rol} onChange={handleBaseChange}>
+              <option value="CONSUMIDOR">Consumidor</option>
+              <option value="EMPRENDIMIENTO">Emprendimiento</option>
+              <option value="PRODUCTOR">Productor</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Datos del Perfil</legend>
           
-          <h2>Crea tu cuenta en EcoNexo</h2>
-          
-          {error && <div className="alert-error">{error}</div>}
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="input-group">
-              <label>Nombre Completo</label>
-              <input type="text" name="fullname" required onChange={handleChange} placeholder="Ej. Juan Manuel Silva" />
-            </div>
+          {baseData.rol === 'CONSUMIDOR' && (
+            <>
+              <div><label>Nombre:</label><input type="text" name="nombre" required onChange={handlePerfilChange} /></div>
+              <div><label>Apellido:</label><input type="text" name="apellido" required onChange={handlePerfilChange} /></div>
+            </>
+          )}
 
-            <div className="input-group">
-              <label>Correo Electrónico</label>
-              <input type="email" name="email" required onChange={handleChange} placeholder="juan@correo.com" />
-            </div>
+          {(baseData.rol === 'EMPRENDIMIENTO' || baseData.rol === 'PRODUCTOR') && (
+            <>
+              <div><label>Nombre de la Cuenta:</label><input type="text" name="nombreCuenta" required onChange={handlePerfilChange} /></div>
+              <div><label>Nombre del Responsable:</label><input type="text" name="nombreResponsable" required onChange={handlePerfilChange} /></div>
+              <div><label>Teléfono:</label><input type="text" name="telefono" required onChange={handlePerfilChange} /></div>
+            </>
+          )}
 
-            <div className="input-group">
-              <label>Contraseña</label>
-              <input type="password" name="password" required minLength="6" onChange={handleChange} placeholder="Mínimo 6 caracteres" />
+          {baseData.rol === 'EMPRENDIMIENTO' && (
+            <div>
+              <label>Rubro:</label>
+              <select name="rubro" required onChange={handlePerfilChange}>
+                <option value="ALIMENTOS_CONSERVAS">Alimentos y Conservas</option>
+                <option value="TEXTIL_ARTESANIAS">Textil y Artesanías</option>
+                <option value="COSMETICA_NATURAL">Cosmética Natural</option>
+                <option value="RECICLAJE_SUSTENTABILIDAD">Reciclaje y Sustentabilidad</option>
+                <option value="SERVICIOS_PRODUCCION">Servicios de Producción</option>
+              </select>
             </div>
+          )}
 
-            {/* Condicional: No pedimos emprendimiento si es un consumidor */}
-            {selectedRole !== 'consumidor' && (
-              <div className="input-group">
-                <label>Nombre de tu Emprendimiento / Finca</label>
-                <input type="text" name="entity" required onChange={handleChange} placeholder="Ej. Finca Monte Adentro" />
+          {baseData.rol === 'PRODUCTOR' && (
+            <>
+              <div>
+                <label>Tipo de Establecimiento:</label>
+                <select name="tipoEstablecimiento" required onChange={handlePerfilChange}>
+                  <option value="CHACRA_FAMILIAR">Chacra Familiar</option>
+                  <option value="QUINTA_HUERTA">Quinta / Huerta</option>
+                  <option value="CAMPO_PARCELA">Campo / Parcela</option>
+                  <option value="APIARIO_MONTE">Apiario / Monte</option>
+                  <option value="FINCA_FRUTALES">Finca de Frutales</option>
+                </select>
               </div>
-            )}
+              
+              <div style={{ marginTop: '15px' }}>
+                <label style={{ fontWeight: 'bold' }}>Categorías de Producción (selecciona al menos una):</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                  {OPCIONES_CATEGORIAS.map((cat) => (
+                    <label key={cat.value} style={{ display: 'flex', alignItems: 'center', fontWeight: 'normal' }}>
+                      <input 
+                        type="checkbox" 
+                        value={cat.value}
+                        onChange={handleCheckboxChange}
+                        checked={perfilData.categorias.includes(cat.value)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      {cat.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </fieldset>
 
-            <button type="submit" className="btn-primary btn-full" disabled={loading}>
-              {loading ? 'Creando cuenta...' : 'Crear mi cuenta gratuita'}
-            </button>
-          </form>
-
-          <p className="form-footer">
-            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-          </p>
-        </div>
-      </div>
-    </main>
+        <button type="submit">Registrarse</button>
+      </form>
+    </div>
   );
 };

@@ -1,32 +1,34 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
+import api from '../api/axiosConfig';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const login = async (email, password) => {
-    await new Promise((resolve) => setTimeout(resolve, 450));
-    if (!email || !password || password.length < 4) throw new Error('Credenciales inválidas');
+  const [loading, setLoading] = useState(true);
 
-    const rol = email.toLowerCase().includes('productor')
-      ? 'PRODUCTOR'
-      : email.toLowerCase().includes('emprendedor')
-        ? 'EMPRENDIMIENTO'
-        : 'CONSUMIDOR';
-    const data = { id: `mock-${Date.now()}`, email, rol, token: 'mock-token' };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const rol = localStorage.getItem('rol');
+    const id = localStorage.getItem('id');
+    
+    if (token && rol && id) setUser({ token, rol, id });
+    setLoading(false);
+  }, []);
+
+  const login = async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password });
     guardarSesion(data);
     return data;
   };
 
   const register = async (email, password, rol, datosPerfil) => {
-    await new Promise((resolve) => setTimeout(resolve, 450));
-    const data = {
-      id: `mock-${Date.now()}`,
-      email,
-      rol: rol.toUpperCase() === 'EMPRENDEDOR' ? 'EMPRENDIMIENTO' : rol.toUpperCase(),
-      token: 'mock-token',
-      datosPerfil
-    };
+    const { data } = await api.post('/auth/register', { email, password, rol, datosPerfil });
+    return data;
+  };
+
+  const verifyCode = async (email, codigo) => {
+    const { data } = await api.post('/auth/verify', { email, codigo });
     guardarSesion(data);
     return data;
   };
@@ -45,8 +47,20 @@ export const AuthProvider = ({ children }) => {
     setUser({ token: data.token, rol: data.rol, id: data.id });
   };
 
+  const forgotPassword = async (email) => {
+    const { data } = await api.post('/auth/forgot-password', { email });
+    return data;
+  };
+
+  const resetPassword = async (email, codigo, nuevaPassword) => {
+    const { data } = await api.post('/auth/reset-password', { email, codigo, nuevaPassword });
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading: false }}>
+    <AuthContext.Provider value={{ 
+      user, login, register, verifyCode, logout, forgotPassword, resetPassword, loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
