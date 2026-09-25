@@ -5,13 +5,12 @@ import L from 'leaflet';
 import api from '../../api/axiosConfig';
 import { AuthContext } from '../../context/AuthContext';
 
-// Corrección del icono de Leaflet en React
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 let DefaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconAnchor: [12, 41] });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-export const LocationModal = () => {
+export const LocationModal = ({ forceOpen = false, onClose, onSuccess, initialData }) => {
   const { user } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState([-26.1848, -58.1731]); // Formosa por defecto
@@ -19,12 +18,24 @@ export const LocationModal = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Verificamos si ya completó este paso en su sesión
-    const hasLocation = localStorage.getItem(`ubicacion_${user?.id}`);
-    if (!hasLocation && user) setIsOpen(true);
-  }, [user]);
+    // Si viene desde el botón editar, lo forzamos a abrir
+    if (forceOpen) {
+      setIsOpen(true);
+      // Si recibimos datos previos, los cargamos en el mapa y en el formulario
+      if (initialData?.lat && initialData?.lng) {
+        setPosition([initialData.lat, initialData.lng]);
+        setFormData({
+          localidad: initialData.localidad || '',
+          direccionReferencia: initialData.direccionReferencia || ''
+        });
+      }
+    } else {
+      // Comportamiento normal (para los Dashboards)
+      const hasLocation = localStorage.getItem(`ubicacion_${user?.id}`);
+      if (!hasLocation && user) setIsOpen(true);
+    }
+  }, [user, forceOpen, initialData]);
 
-  // Componente interno para capturar clics en el mapa
   const LocationMarker = () => {
     useMapEvents({
       click(e) {
@@ -42,8 +53,12 @@ export const LocationModal = () => {
       );
     }
   };
+const handleSubmit = async () => {
+    if (!formData.localidad.trim()) {
+      alert('Por favor, ingresa una Localidad/Ciudad antes de guardar.');
+      return;
+    }
 
-  const handleSubmit = async () => {
     setLoading(true);
     try {
       await api.post('/auth/location', {
@@ -54,7 +69,11 @@ export const LocationModal = () => {
       });
       
       localStorage.setItem(`ubicacion_${user.id}`, 'true');
-      setIsOpen(false);
+      
+      if (onSuccess) onSuccess(); 
+      if (onClose) onClose(); 
+      if (!forceOpen) setIsOpen(false); 
+      
     } catch (error) {
       console.error('Error al guardar la ubicación', error);
       alert('Hubo un error al guardar tu ubicación.');
@@ -63,13 +82,26 @@ export const LocationModal = () => {
     }
   };
 
+  const handleCerrar = () => {
+    if (onClose) onClose();
+    else setIsOpen(false);
+  };
+
   if (!isOpen) return null;
 
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2>Configura tu Ubicación</h2>
-        <p style={{ marginBottom: '15px', color: '#555' }}>
+        
+        {/* Cabecera del modal */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ margin: 0 }}>{forceOpen ? 'Editar Ubicación' : 'Configura tu Ubicación'}</h2>
+          {forceOpen && (
+            <button onClick={handleCerrar} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>✖</button>
+          )}
+        </div>
+        
+        <p style={{ margin: '15px 0', color: '#555' }}>
           {user?.rol === 'CONSUMIDOR' 
             ? 'Indícanos tu zona para mostrarte emprendimientos cercanos.'
             : 'Fija el punto exacto de tu establecimiento para que los consumidores te encuentren.'}
@@ -117,25 +149,9 @@ export const LocationModal = () => {
   );
 };
 
-// Estilos en línea rápidos para el Hackathon
-const overlayStyle = {
-  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center',
-  alignItems: 'center', zIndex: 9999, padding: '20px'
-};
-const modalStyle = {
-  backgroundColor: 'white', padding: '25px', borderRadius: '12px',
-  width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto'
-};
-const inputStyle = {
-  width: '100%', padding: '10px', marginBottom: '15px',
-  borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box'
-};
-const btnLocationStyle = {
-  width: '100%', padding: '10px', marginBottom: '15px', backgroundColor: '#f0f0f0',
-  border: '1px solid #ccc', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
-};
-const btnSubmitStyle = {
-  width: '100%', padding: '12px', backgroundColor: '#4CAF50', color: 'white',
-  border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px'
-};
+// Estilos
+const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '20px' };
+const modalStyle = { backgroundColor: 'white', padding: '25px', borderRadius: '12px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' };
+const inputStyle = { width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' };
+const btnLocationStyle = { width: '100%', padding: '10px', marginBottom: '15px', backgroundColor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' };
+const btnSubmitStyle = { width: '100%', padding: '12px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' };
