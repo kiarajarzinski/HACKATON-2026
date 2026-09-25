@@ -92,7 +92,10 @@ export const DiferenciasRoles = () => {
                     dragging={false}
                     style={{ width: '100%', height: '140px', zIndex: 0 }}
                   >
-                    <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
                     {/* Un par de marcadores de ejemplo para ilustrar */}
                     <Marker position={[-24.7064, -60.5936]}></Marker>
                     <Marker position={[-25.1256, -58.2464]}></Marker>

@@ -5,6 +5,8 @@ import { AuthProvider } from '../context/AuthContext';
 import { Home } from '../pages/public/Home';
 import { AuthPage } from '../pages/public/AuthPage';
 import { Verificacion } from '../pages/public/Verificacion';
+import { LoginForm } from '../components/auth/LoginForm';
+import { RegisterForm } from '../components/auth/RegisterForm';
 
 // Páginas Privadas (Roles y Perfil)
 import { ConsumidorDashboard } from '../pages/consumidor/ConsumidorDashboard';
@@ -24,6 +26,9 @@ export const AppRouter = () => {
 
           {/* 2. Página de Login y Registro */}
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+
           
           <Route path="/verificar" element={<Verificacion />} />
 

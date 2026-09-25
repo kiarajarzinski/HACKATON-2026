@@ -1,0 +1,134 @@
+/* src/styles/RoleSelector.css */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-container {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 850px;
+  border-radius: 1.5rem;
+  padding: 3rem;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f1f5f9;
+  color: #64748b;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  background-color: #e2e8f0;
+  color: #171d16;
+}
+
+.modal-badge {
+  display: inline-block;
+  background-color: #e9f0e3;
+  color: #136d2e;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 1.2rem;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+
+.modal-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #171d16;
+  margin-bottom: 0.5rem;
+}
+
+.modal-subtitle {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 2.5rem;
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.role-card {
+  background-color: #f8fafc;
+  border: 1.5px solid transparent;
+  border-radius: 1rem;
+  padding: 2.5rem 1.5rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.role-card:hover {
+  background-color: #ffffff;
+  border-color: #75c97f;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.role-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #e9f0e3;
+  color: #136d2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.role-icon-wrapper svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.role-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #171d16;
+  margin-bottom: 0.4rem;
+}
+
+.role-card p {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .modal-container {
+    padding: 2rem 1.5rem;
+  }
+  .roles-grid {
+    grid-template-columns: 1fr;
+  }
+}

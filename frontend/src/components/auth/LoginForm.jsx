@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import '../../styles/Login.css'; 
 
 export const LoginForm = () => {
   const { login, forgotPassword, resetPassword } = useContext(AuthContext);
@@ -71,76 +72,98 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="login-container">
-      
-      {view === 'login' && (
-        <>
-          <h2>Iniciar Sesión</h2>
-          {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-          {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
-          
-          <form onSubmit={handleLoginSubmit}>
-            <div>
-              <label>Email:</label>
-              <input type="email" name="email" value={formData.email} required onChange={handleChange} />
+    <div className="login-page-wrapper">
+      <div className="login-card">
+        
+        {view === 'login' && (
+          <>
+            <div className="login-header">
+              <span className="login-badge">PORTAL DE ACCESO</span>
+              <h2>Bienvenido de vuelta</h2>
+              <p>Ingresa tus credenciales para acceder a la red.</p>
             </div>
-            <div>
-              <label>Contraseña:</label>
-              <input type="password" name="password" value={formData.password} required onChange={handleChange} />
-            </div>
-            <button type="submit" disabled={loading}>{loading ? 'Ingresando...' : 'Ingresar'}</button>
+
+            {error && <div className="login-alert error">{error}</div>}
+            {success && <div className="login-alert success">{success}</div>}
             
-            <p style={{ textAlign: 'center', marginTop: '15px' }}>
-              <a href="#!" onClick={(e) => { e.preventDefault(); setView('forgot'); setError(null); setSuccess(null); }} style={{ color: '#3498db', textDecoration: 'none' }}>
-                ¿Olvidaste tu contraseña?
-              </a>
-            </p>
-          </form>
-        </>
-      )}
+            <form className="login-form" onSubmit={handleLoginSubmit}>
+              <div className="login-input-group">
+                <label>Correo Electrónico</label>
+                <input className="login-input" type="email" name="email" value={formData.email} required onChange={handleChange} placeholder="correo@ejemplo.com" />
+              </div>
+              <div className="login-input-group">
+                <div className="login-label-flex">
+                  <label>Contraseña</label>
+                  <a href="#!" onClick={(e) => { e.preventDefault(); setView('forgot'); setError(null); setSuccess(null); }}>
+                    ¿Olvidaste tu contraseña?
+                  </a>
+                </div>
+                <input className="login-input" type="password" name="password" value={formData.password} required onChange={handleChange} placeholder="••••••••" />
+              </div>
+              <button className="login-btn" type="submit" disabled={loading}>
+                {loading ? 'Ingresando...' : 'Ingresar a mi Cuenta'}
+              </button>
+              
+              <p className="login-footer">
+                ¿Aún no tienes cuenta? <Link to="/register">Regístrate gratis</Link>
+              </p>
+            </form>
+          </>
+        )}
 
-      {view === 'forgot' && (
-        <>
-          <h2>Recuperar Contraseña</h2>
-          <p style={{ fontSize: '14px', marginBottom: '15px' }}>Ingresa tu email y te enviaremos un código de 6 dígitos.</p>
-          
-          {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-          {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
-          
-          <form onSubmit={handleForgotSubmit}>
-            <div>
-              <label>Email:</label>
-              <input type="email" name="email" value={formData.email} required onChange={handleChange} />
+        {view === 'forgot' && (
+          <>
+            <div className="login-header">
+              <span className="login-badge">RECUPERACIÓN</span>
+              <h2>Recuperar Contraseña</h2>
+              <p>Ingresa tu email y te enviaremos un código de 6 dígitos.</p>
             </div>
-            <button type="submit" disabled={loading}>{loading ? 'Enviando...' : 'Enviar Código'}</button>
-            <button type="button" onClick={() => setView('login')} style={{ backgroundColor: '#ccc', marginTop: '10px' }}>Volver</button>
-          </form>
-        </>
-      )}
+            
+            {error && <div className="login-alert error">{error}</div>}
+            {success && <div className="login-alert success">{success}</div>}
+            
+            <form className="login-form" onSubmit={handleForgotSubmit}>
+              <div className="login-input-group">
+                <label>Email</label>
+                <input className="login-input" type="email" name="email" value={formData.email} required onChange={handleChange} />
+              </div>
+              <button className="login-btn" type="submit" disabled={loading}>
+                {loading ? 'Enviando...' : 'Enviar Código'}
+              </button>
+              <button className="login-secondary-btn" type="button" onClick={() => setView('login')}>Volver</button>
+            </form>
+          </>
+        )}
 
-      {view === 'reset' && (
-        <>
-          <h2>Restablecer Contraseña</h2>
-          <p style={{ fontSize: '14px', marginBottom: '15px' }}>Ingresa el código que enviamos a <b>{formData.email}</b></p>
-          
-          {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-          {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
-          
-          <form onSubmit={handleResetSubmit}>
-            <div>
-              <label>Código de 6 dígitos:</label>
-              <input type="text" name="codigo" value={formData.codigo} maxLength="6" required onChange={handleChange} style={{ letterSpacing: '2px', textAlign: 'center' }} />
+        {view === 'reset' && (
+          <>
+            <div className="login-header">
+              <span className="login-badge">RESTABLECER</span>
+              <h2>Restablecer Contraseña</h2>
+              <p>Ingresa el código que enviamos a <b>{formData.email}</b></p>
             </div>
-            <div>
-              <label>Nueva Contraseña:</label>
-              <input type="password" name="newPassword" value={formData.newPassword} required onChange={handleChange} />
-            </div>
-            <button type="submit" disabled={loading}>{loading ? 'Guardando...' : 'Cambiar Contraseña'}</button>
-            <button type="button" onClick={() => setView('login')} style={{ backgroundColor: '#ccc', marginTop: '10px' }}>Cancelar</button>
-          </form>
-        </>
-      )}
-      
+            
+            {error && <div className="login-alert error">{error}</div>}
+            {success && <div className="login-alert success">{success}</div>}
+            
+            <form className="login-form" onSubmit={handleResetSubmit}>
+              <div className="login-input-group">
+                <label>Código de 6 dígitos</label>
+                <input className="login-input" type="text" name="codigo" value={formData.codigo} maxLength="6" required onChange={handleChange} style={{ letterSpacing: '4px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }} />
+              </div>
+              <div className="login-input-group">
+                <label>Nueva Contraseña</label>
+                <input className="login-input" type="password" name="newPassword" value={formData.newPassword} required onChange={handleChange} />
+              </div>
+              <button className="login-btn" type="submit" disabled={loading}>
+                {loading ? 'Guardando...' : 'Cambiar Contraseña'}
+              </button>
+              <button className="login-secondary-btn" type="button" onClick={() => setView('login')}>Cancelar</button>
+            </form>
+          </>
+        )}
+        
+      </div>
     </div>
   );
 };

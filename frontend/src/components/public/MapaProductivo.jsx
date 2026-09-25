@@ -32,7 +32,10 @@ export const MapaProductivo = () => {
       <div className="mapa-layout">
         <div className="mapa-leaflet-container">
           <MapContainer center={formosaCenter} zoom={7} scrollWheelZoom={false} style={{ width: '100%', height: '100%', minHeight: '440px', borderRadius: '16px', zIndex: 0 }}>
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
             {mapNodes.map((node) => (
               <Marker key={node.id} position={node.coords} icon={createCustomIcon(node.icon, node.hex)} eventHandlers={{ click: () => setActiveProducer(b2bData[node.id]) }}>
                 <Popup>{node.name}</Popup>
@@ -72,8 +75,9 @@ export const MapaProductivo = () => {
               </div>
             </motion.div>
           </AnimatePresence>
-          <motion.button whileTap={{ scale: 0.95 }} className="navbar-btn" style={{ width: '100%', justifyContent: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chat</span><span>Contactar Productor</span>
+          <motion.button whileTap={{ scale: 0.95 }} className="navbar-btn navbar-btn-block">
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chat</span>
+            <span>Contactar Productor</span>
           </motion.button>
         </div>
       </div>

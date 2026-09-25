@@ -285,58 +285,19 @@ export const ProfilePage = () => {
             <span
               style={{
                 display: "inline-block",
-                padding: "4px 10px",
+                padding: "4px 8px",
                 backgroundColor: "#e8f4f8",
-                color: "#16a34a",
-                borderRadius: "20px",
+                color: "#2980b9",
+                borderRadius: "4px",
                 fontSize: "12px",
                 fontWeight: "bold",
               }}
             >
               {rol}
             </span>
-
-            {/* BOTÓN EDITAR PERFIL & VITRINA (Solo para Productor y Emprendedor) */}
-            {rol !== "CONSUMIDOR" && (
-              <button
-                onClick={() => setShowEditarPerfilModal(true)}
-                style={{
-                  marginTop: "15px",
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "8px",
-                  border: "1px solid #16a34a",
-                  backgroundColor: "#f0fdf4",
-                  color: "#16a34a",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                }}
-              >
-                ✏️ Editar Identidad & Vitrina
-              </button>
-            )}
           </div>
 
           <hr style={{ borderTop: "1px solid #eee", margin: "1.5rem 0" }} />
-
-          {/* HISTORIA HUMANA */}
-          {perfilActivo?.historia && (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <b style={{ fontSize: "13px", color: "#333" }}>
-                Nuestra Historia:
-              </b>
-              <p
-                style={{
-                  fontSize: "13px",
-                  color: "#666",
-                  fontStyle: "italic",
-                  margin: "5px 0",
-                }}
-              >
-                "{perfilActivo.historia}"
-              </p>
-            </div>
-          )}
 
           <div style={{ fontSize: "14px", lineHeight: "1.8" }}>
             {rol === "CONSUMIDOR" && (
@@ -359,7 +320,7 @@ export const ProfilePage = () => {
                   onClick={() => setShowLocationModal(true)}
                   style={btnEditLocation}
                 >
-                  ✏️ Ubicación
+                  ✏️ Editar
                 </button>
               </div>
             )}
@@ -395,7 +356,7 @@ export const ProfilePage = () => {
                     onClick={() => setShowLocationModal(true)}
                     style={btnEditLocation}
                   >
-                    ✏️ Ubicación
+                    ✏️ Editar
                   </button>
                 </div>
               </>
@@ -413,6 +374,7 @@ export const ProfilePage = () => {
                   <b>Establecimiento:</b>{" "}
                   {productor?.tipoEstablecimiento?.replace(/_/g, " ")}
                 </p>
+
                 <div
                   style={{
                     display: "flex",
@@ -433,7 +395,7 @@ export const ProfilePage = () => {
                     onClick={() => setShowLocationModal(true)}
                     style={btnEditLocation}
                   >
-                    ✏️ Ubicación
+                    ✏️ Editar
                   </button>
                 </div>
 
@@ -450,14 +412,14 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: Catálogo y Publicaciones */}
+        {/* COLUMNA DERECHA: Productos */}
         <div
           style={{
             flex: "2",
             minWidth: "400px",
             backgroundColor: "white",
             padding: "2rem",
-            borderRadius: "16px",
+            borderRadius: "10px",
             boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
           }}
         >
@@ -475,8 +437,7 @@ export const ProfilePage = () => {
                 }}
               >
                 <p>
-                  Tus compras coordinadas por WhatsApp aparecerán en "Mis
-                  Pedidos".
+                  Tus compras, favoritos y mapa de calor aparecerán aquí pronto.
                 </p>
               </div>
             </>
@@ -490,21 +451,24 @@ export const ProfilePage = () => {
                   marginBottom: "1.5rem",
                 }}
               >
-                <h3 style={{ margin: 0 }}>Mis Publicaciones</h3>
+                <h3 style={{ margin: 0 }}>Mis Productos</h3>
                 <button
-                  onClick={() => setShowPublicarModal(true)}
+                  onClick={
+                    mostrarFormulario
+                      ? handleCerrarFormulario
+                      : () => setMostrarFormulario(true)
+                  }
                   style={{
-                    padding: "10px 18px",
-                    backgroundColor: "#16a34a",
+                    padding: "8px 16px",
+                    backgroundColor: mostrarFormulario ? "#e74c3c" : "#2ecc71",
                     color: "white",
                     border: "none",
-                    borderRadius: "8px",
+                    borderRadius: "6px",
                     cursor: "pointer",
                     fontWeight: "bold",
                   }}
                 >
-                  + Publicar{" "}
-                  {rol === "PRODUCTOR" ? "Cosecha / Lote" : "Producto"}
+                  {mostrarFormulario ? "Cancelar" : "+ Nuevo Producto"}
                 </button>
               </div>
 
@@ -660,8 +624,8 @@ export const ProfilePage = () => {
                     borderRadius: "8px",
                   }}
                 >
-                  <p style={{ fontSize: "24px", margin: "0 0 10px 0" }}>🌾</p>
-                  <p>Aún no tenés productos publicados en el catálogo.</p>
+                  <p style={{ fontSize: "24px", margin: "0 0 10px 0" }}>🛒</p>
+                  <p>Aún no tienes productos registrados.</p>
                 </div>
               ) : (
                 <div
@@ -750,7 +714,6 @@ export const ProfilePage = () => {
                           <b>Mínimo:</b> {pub.pedidoMinimo}
                         </span>
                       </div>
-
                       <div
                         style={{
                           display: "flex",
@@ -760,14 +723,30 @@ export const ProfilePage = () => {
                         }}
                       >
                         <button
+                          onClick={() => handleEditar(pub)}
+                          style={{
+                            flex: 1,
+                            padding: "5px",
+                            backgroundColor: "#f39c12",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
                           onClick={() => handleEliminar(pub.id)}
                           style={{
-                            width: "100%",
-                            padding: "6px",
-                            backgroundColor: "#fee2e2",
-                            color: "#dc2626",
+                            flex: 1,
+                            padding: "5px",
+                            backgroundColor: "#e74c3c",
+                            color: "white",
                             border: "none",
-                            borderRadius: "6px",
+                            borderRadius: "4px",
                             cursor: "pointer",
                             fontSize: "12px",
                             fontWeight: "bold",
@@ -801,31 +780,16 @@ export const ProfilePage = () => {
           }}
         />
       )}
-
-      {/* 2. MODAL EDITAR PERFIL & VITRINA */}
-      <EditarPerfilModal
-        isOpen={showEditarPerfilModal}
-        onClose={() => setShowEditarPerfilModal(false)}
-        userRole={rol}
-        initialData={perfilActivo}
-        onPerfilActualizado={() => {
-          fetchProfile();
-        }}
-      />
-
-      {/* 3. MODAL PUBLICAR PRODUCTO */}
-      <PublicarProductoModal
-        isOpen={showPublicarModal}
-        onClose={() => setShowPublicarModal(false)}
-        userRole={rol}
-        onPublicacionCreada={() => {
-          fetchProfile();
-        }}
-      />
     </div>
   );
 };
 
+const inputStyle = {
+  padding: "8px 12px",
+  borderRadius: "4px",
+  border: "1px solid #ccc",
+  boxSizing: "border-box",
+};
 const btnEditLocation = {
   padding: "4px 8px",
   fontSize: "12px",
