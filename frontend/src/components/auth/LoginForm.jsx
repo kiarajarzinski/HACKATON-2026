@@ -8,7 +8,7 @@ export const LoginForm = () => {
   
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null); // Nuevo estado de éxito
+  const [success, setSuccess] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,11 +21,8 @@ export const LoginForm = () => {
     
     try {
       const res = await login(formData.email, formData.password);
-      
-      // Mostramos el mensaje
       setSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
       
-      // Retrasamos la redirección 1.5 segundos
       setTimeout(() => {
         if (res.rol === 'CONSUMIDOR') navigate('/consumidor');
         if (res.rol === 'EMPRENDIMIENTO') navigate('/emprendedor');
@@ -41,7 +38,6 @@ export const LoginForm = () => {
     <div className="login-container">
       <h2>Iniciar Sesión</h2>
       
-      {/* Alertas visuales */}
       {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
       {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
       

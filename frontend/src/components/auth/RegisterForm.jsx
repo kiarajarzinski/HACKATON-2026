@@ -1,4 +1,5 @@
 import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 const OPCIONES_CATEGORIAS = [
@@ -10,8 +11,9 @@ const OPCIONES_CATEGORIAS = [
   { value: 'FORESTAL', label: 'Forestal' }
 ];
 
-export const RegisterForm = ({ onRegisterSuccess }) => {
+export const RegisterForm = () => {
   const { register } = useContext(AuthContext);
+  const navigate = useNavigate();
   
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -60,12 +62,10 @@ export const RegisterForm = ({ onRegisterSuccess }) => {
     try {
       await register(baseData.email, baseData.password, baseData.rol, perfilData);
       
-      setSuccess('¡Registro exitoso! Redirigiendo al inicio de sesión...');
+      setSuccess('¡Registro exitoso! Revisa tu correo...');
       
       setTimeout(() => {
-        if (onRegisterSuccess) {
-          onRegisterSuccess();
-        }
+        navigate('/verificar', { state: { email: baseData.email } });
       }, 1500);
 
     } catch (err) {

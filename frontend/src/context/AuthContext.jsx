@@ -8,14 +8,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Cargar sesión si existe un token
     const token = localStorage.getItem('token');
     const rol = localStorage.getItem('rol');
     const id = localStorage.getItem('id');
     
-    if (token && rol && id) {
-      setUser({ token, rol, id });
-    }
+    if (token && rol && id) setUser({ token, rol, id });
     setLoading(false);
   }, []);
 
@@ -27,6 +24,12 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password, rol, datosPerfil) => {
     const { data } = await api.post('/auth/register', { email, password, rol, datosPerfil });
+    return data;
+  };
+
+  const verifyCode = async (email, codigo) => {
+    const { data } = await api.post('/auth/verify', { email, codigo });
+    guardarSesion(data);
     return data;
   };
 
@@ -45,7 +48,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, verifyCode, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
