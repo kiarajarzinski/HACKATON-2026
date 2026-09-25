@@ -1,0 +1,106 @@
+.navbar-header {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  z-index: 999; /* Z-index altísimo para que NADA se le sobreponga */
+  padding: 0 20px;
+  pointer-events: none;
+}
+
+.navbar-pill {
+  max-width: 1100px;
+  margin: 0 auto;
+  pointer-events: auto;
+  background-color: rgba(240, 247, 234, 0.95); /* var(--honeydew) con opacidad */
+  backdrop-filter: blur(12px);
+  border-radius: 50px;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 10px 30px rgba(17, 111, 34, 0.641);
+}
+
+.navbar-logo {
+  font-weight: 800;
+  color: var(--kombu-green);
+  text-decoration: none;
+  font-size: 18px;
+}
+
+/* Contenedor central de redirecciones */
+.navbar-links {
+  display: none; /* Oculto en móviles para evitar que choque con el logo */
+}
+
+/* Muestra las redirecciones a partir de tamaño tablet/PC */
+@media (min-width: 768px) {
+  .navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--cornsilk);
+    padding: 6px;
+    border-radius: 50px;
+  }
+}
+
+.navbar-link-item {
+  position: relative;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark-moss);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.navbar-link-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background-color: var(--emerald);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+/* =========================================
+   ESTADO HOVER Y ACTIVO (Scrollspy unificados)
+   ========================================= */
+
+/* Fondo y color de texto para ambos estados */
+.navbar-link-item:hover,
+.navbar-link-item.activo {
+  background-color: #dcfdbc;
+  color: var(--kombu-green);
+}
+
+/* La línea se expande al 70% tanto al pasar el mouse como al scrollear */
+.navbar-link-item:hover::after,
+.navbar-link-item.activo::after {
+  width: 70%;
+}
+
+/* =========================================
+   BOTÓN EXPLORAR
+   ========================================= */
+.navbar-btn {
+  background-color: var(--emerald);
+  color: var(--kombu-green);
+  padding: 10px 20px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.navbar-btn:hover {
+  background-color: var(--willow-green);
+}

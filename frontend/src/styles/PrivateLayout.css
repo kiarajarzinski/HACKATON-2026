@@ -1,0 +1,36 @@
+.private-layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #F0F7EA; /* Honeydew */
+}
+
+/* Menú lateral (Sidebar) */
+.private-sidebar {
+  width: 260px;
+  background-color: #1e3318; /* Kombu Green */
+  color: #FFFAE0; /* Cornsilk */
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+}
+
+/* Área central de trabajo */
+.private-main-content {
+  flex: 1;
+  margin-left: 260px; /* Deja espacio para el sidebar */
+  padding: 32px;
+}
+
+@media (max-width: 768px) {
+  .private-sidebar {
+    display: none; /* En móvil se ocultaría detrás de un menú hamburguesa */
+  }
+  .private-main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+}

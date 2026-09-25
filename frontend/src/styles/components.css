@@ -1,0 +1,21 @@
+@layer components {
+  /* Botón Principal (Verde Esmeralda) */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-sm shadow-md bg-emerald text-kombu-green hover:bg-willow-green transition-all duration-300 hover:shadow-lg active:scale-95;
+  }
+
+  /* Botón Secundario (Claro) */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-sm shadow-md bg-cornsilk text-kombu-green hover:bg-white transition-all duration-300 hover:shadow-lg active:scale-95;
+  }
+
+  /* Tarjeta Efecto Vidrio (Para el Hero Section) */
+  .card-glass {
+    @apply relative rounded-3xl backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-colors border border-white/25 shadow-2xl;
+  }
+
+  /* Tarjeta Blanca Clásica (Para Vitrina y Radar) */
+  .card-solid {
+    @apply bg-white rounded-3xl shadow-xl border border-honeydew overflow-hidden hover:shadow-2xl transition-shadow duration-300;
+  }
+}

@@ -1,0 +1,42 @@
+/* src/styles/stile.css */
+
+/* 1. IMPORTACIÓN DE COMPONENTES (Deben ir SIEMPRE primero) */
+@import './global-components.css'; /* Este es clave para centrar y hacer grillas */
+@import './PublicLayout.css';
+@import './Navbar.css';
+@import './HeroSection.css';
+@import './TrustStrip.css';
+@import './MapaProductivo.css';
+@import './ProductCards.css';
+@import './FuncionalidadesCTA.css';
+@import './DiferenciasRoles.css';
+
+/* 2. VARIABLES DE COLOR (Paleta EcoNexo) */
+:root {
+  --kombu-green: #1e3318;
+  --dark-moss: #2d4722;
+  --palm-leaf: #47622A;
+  --honeydew: #F0F7EA;
+  --cornsilk: #fefefe;
+  --vanilla-custard: #EEE59F;
+  --willow-green: #AAD480;
+  --emerald: #75C97F;
+}
+
+/* 3. RESETEO BÁSICO */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--honeydew);
+  color: var(--kombu-green);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

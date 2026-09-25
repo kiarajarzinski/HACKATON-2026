@@ -1,0 +1,15 @@
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* Usamos tus colores de Tailwind directamente en el CSS */
+    @apply bg-honeydew text-kombu-green font-sans antialiased;
+  }
+
+  /* Cambia el color de cuando el usuario subraya/selecciona texto */
+  ::selection {
+    @apply bg-willow-green/40 text-kombu-green;
+  }
+}
