@@ -38,3 +38,19 @@ export const verify = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const updateLocation = async (req, res) => {
+  try {
+    const { latitud, longitud, localidad, direccionReferencia } = req.body;
+    const { id, rol } = req.usuario; // Extraído del token por el middleware
+
+    const result = await authService.updateUserLocation(id, rol, { 
+      latitud, longitud, localidad, direccionReferencia 
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error guardando ubicación:', error.message);
+    res.status(500).json({ error: 'Error al actualizar la ubicación' });
+  }
+};

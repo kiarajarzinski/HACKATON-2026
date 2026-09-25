@@ -1,29 +1,51 @@
-import { useState } from 'react';
-import { RoleModal } from './RoleModal';
+import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 
 export const Navbar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { logout, user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout(); // Limpia el localStorage y el estado del usuario
+    navigate('/'); // Redirige al login
+  };
 
   return (
-    <nav className="p-4 bg-gray-100 flex justify-between items-center">
-      <h1 className="font-bold text-xl">Mi Hackathon</h1>
+    <nav style={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      padding: '1rem 2rem', 
+      backgroundColor: '#2c3e50', 
+      color: 'white',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    }}>
+      <h2 style={{ margin: 0 }}>Mi Hackathon</h2>
       
-      <div>
-        <button className="mr-4 text-blue-600 font-semibold">Iniciar Sesión</button>
-        {/* Este botón abre el modal */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <span style={{ fontSize: '14px', opacity: 0.9 }}>
+          Sesión: <strong>{user?.rol}</strong>
+        </span>
+        
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded font-bold"
+          onClick={handleLogout} 
+          style={{ 
+            padding: '8px 16px', 
+            backgroundColor: '#e74c3c', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '6px', 
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#c0392b'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#e74c3c'}
         >
-          Registrarse
+          Cerrar Sesión
         </button>
       </div>
-
-      {/* Renderizamos el modal, pasándole el estado y la función para cerrarlo */}
-      <RoleModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
     </nav>
   );
 };

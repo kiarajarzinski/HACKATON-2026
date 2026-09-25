@@ -122,3 +122,25 @@ const validarDatosPerfil = (rol, datos) => {
       throw new Error('Rol no válido');
   }
 };
+
+export const updateUserLocation = async (usuarioId, rol, datosUbicacion) => {
+  const { latitud, longitud, localidad, direccionReferencia } = datosUbicacion;
+
+  if (rol === 'CONSUMIDOR') {
+    await prisma.consumidor.update({
+      where: { usuarioId },
+      data: { latitud, longitud, localidad }
+    });
+  } else if (rol === 'EMPRENDIMIENTO') {
+    await prisma.emprendimiento.update({
+      where: { usuarioId },
+      data: { latitud, longitud, localidad, direccionReferencia }
+    });
+  } else if (rol === 'PRODUCTOR') {
+    await prisma.productor.update({
+      where: { usuarioId },
+      data: { latitud, longitud, localidad, direccionReferencia }
+    });
+  }
+  return { mensaje: 'Ubicación guardada correctamente' };
+};
