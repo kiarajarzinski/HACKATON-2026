@@ -23,13 +23,17 @@ model Usuario {
 }
 
 model Emprendimiento {
-  id                String              @id @default(uuid())
-  nombreCuenta      String
-  nombreResponsable String
-  telefono          String
-  rubro             RubroEmprendimiento
-  usuarioId         String              @unique
-  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id                  String              @id @default(uuid())
+  nombreCuenta        String
+  nombreResponsable   String
+  telefono            String
+  rubro               RubroEmprendimiento
+  usuarioId           String              @unique
+  latitud             Float?
+  longitud            Float?
+  localidad           String?
+  direccionReferencia String?
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("emprendimientos")
 }
@@ -51,6 +55,10 @@ model Productor {
   telefono             String
   tipoEstablecimiento  TipoEstablecimiento
   usuarioId            String                 @unique
+  latitud              Float?
+  longitud             Float?
+  localidad            String?
+  direccionReferencia  String?
   productor_categorias productor_categorias[]
   usuario              Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
