@@ -22,3 +22,20 @@ export const enviarCorreoVerificacion = async (email, codigo) => {
     console.error('Error enviando correo:', error);
   }
 };
+
+export const enviarCorreoRecuperacion = async (email, codigo) => {
+  console.log(`\n🔔 [HACKATHON TIP] Código de Recuperación para ${email}: ${codigo}\n`);
+
+  try {
+    await transporter.sendMail({
+      from: '"Mi Hackathon" <no-reply@mihackathon.com>',
+      to: email,
+      subject: 'Recupera tu contraseña',
+      html: `<h2>Recuperación de contraseña</h2>
+             <p>Tu código para restablecer la contraseña es: <b style="font-size: 24px;">${codigo}</b></p>
+             <p>Este código expira en 15 minutos.</p>`
+    });
+  } catch (error) {
+    console.error('Error enviando correo de recuperación:', error);
+  }
+};

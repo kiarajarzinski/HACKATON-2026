@@ -54,3 +54,22 @@ export const updateLocation = async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar la ubicación' });
   }
 };
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const result = await authService.solicitarRecuperacionPassword(req.body.email);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, codigo, nuevaPassword } = req.body;
+    const result = await authService.restablecerPassword(email, codigo, nuevaPassword);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

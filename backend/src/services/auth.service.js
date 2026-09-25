@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../config/prisma.js';
 import { enviarCorreoVerificacion } from '../utils/mailer.js';
+import { enviarCorreoRecuperacion } from '../utils/mailer.js';
 
 export const registerUser = async ({ email, password, rol, datosPerfil }) => {
   const usuarioExistente = await prisma.usuario.findUnique({ where: { email } });
@@ -143,4 +144,42 @@ export const updateUserLocation = async (usuarioId, rol, datosUbicacion) => {
     });
   }
   return { mensaje: 'Ubicación guardada correctamente' };
+};
+
+export const solicitarRecuperacionPassword = async (email) => {
+  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  if (!usuario) throw new Error('Usuario no encontrado');
+
+  const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiracion = new Date(Date.now() + 15 * 60000); // Expiración en 15 min
+
+  await prisma.usuario.update({
+    where: { email },
+    data: { tokenVerificacion: codigo, tokenExpiracion: expiracion }
+  });
+
+  enviarCorreoRecuperacion(email, codigo);
+  return { mensaje: 'Correo de recuperación enviado' };
+};
+
+export const restablecerPassword = async (email, codigo, nuevaPassword) => {
+  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  if (!usuario) throw new Error('Usuario no encontrado');
+  
+  if (usuario.tokenVerificacion !== codigo) throw new Error('Código incorrecto');
+  if (usuario.tokenExpiracion < new Date()) throw new Error('El código ha expirado');
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(nuevaPassword, salt);
+
+  await prisma.usuario.update({
+    where: { email },
+    data: {
+      password: hashedPassword,
+      tokenVerificacion: null,
+      tokenExpiracion: null
+    }
+  });
+
+  return { mensaje: 'Contraseña actualizada exitosamente' };
 };

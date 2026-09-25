@@ -47,8 +47,20 @@ export const AuthProvider = ({ children }) => {
     setUser({ token: data.token, rol: data.rol, id: data.id });
   };
 
+  const forgotPassword = async (email) => {
+    const { data } = await api.post('/auth/forgot-password', { email });
+    return data;
+  };
+
+  const resetPassword = async (email, codigo, nuevaPassword) => {
+    const { data } = await api.post('/auth/reset-password', { email, codigo, nuevaPassword });
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, verifyCode, logout, loading }}>
+    <AuthContext.Provider value={{ 
+      user, login, register, verifyCode, logout, forgotPassword, resetPassword, loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
