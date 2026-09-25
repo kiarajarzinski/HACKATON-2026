@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export const Navbar = () => {
   const [activeSection, setActiveSection] = useState('');
@@ -40,7 +41,7 @@ useEffect(() => {
     <header className="navbar-header">
       <div className="navbar-pill">
         
-        <a href="/" className="navbar-logo">🌱 EcoNexo</a>
+        <Link to="/" className="navbar-logo">🌱 EcoNexo</Link>
         
         <nav className="navbar-links">
           {navItems.map((item) => (
@@ -54,7 +55,7 @@ useEffect(() => {
           ))}
         </nav>
 
-        <a href="#vitrina" className="navbar-btn">Ingresar / Explorar</a>
+        <Link to="/login" className="navbar-btn">Ingresar / Explorar</Link>
         
       </div>
     </header>

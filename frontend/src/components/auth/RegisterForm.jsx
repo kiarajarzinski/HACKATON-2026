@@ -1,6 +1,8 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { RoleSelectorModal } from './RoleSelectorModal';
+import '../../styles/Register.css';
 
 const OPCIONES_CATEGORIAS = [
   { value: 'AGRICULTURA_EXTENSIVA', label: 'Agricultura Extensiva' },
@@ -17,9 +19,18 @@ export const RegisterForm = () => {
   
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
   
-  const [baseData, setBaseData] = useState({ email: '', password: '', rol: 'CONSUMIDOR' });
+  const [baseData, setBaseData] = useState({ email: '', password: '', rol: null });
   const [perfilData, setPerfilData] = useState({ nombre: '', apellido: '' });
+
+  const handleRoleSelection = (selectedRole) => {
+    setBaseData({ ...baseData, rol: selectedRole });
+    
+    if (selectedRole === 'CONSUMIDOR') setPerfilData({ nombre: '', apellido: '' });
+    if (selectedRole === 'EMPRENDIMIENTO') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', rubro: 'ALIMENTOS_CONSERVAS' });
+    if (selectedRole === 'PRODUCTOR') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', tipoEstablecimiento: 'CHACRA_FAMILIAR', categorias: [] });
+  };
 
   const handleBaseChange = (e) => {
     const { name, value } = e.target;
@@ -53,121 +64,188 @@ export const RegisterForm = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    setLoading(true);
 
     if (baseData.rol === 'PRODUCTOR' && perfilData.categorias.length === 0) {
       setError('Debes seleccionar al menos una categoría de producción.');
+      setLoading(false);
       return;
     }
 
     try {
       await register(baseData.email, baseData.password, baseData.rol, perfilData);
-      
       setSuccess('¡Registro exitoso! Revisa tu correo...');
-      
-      setTimeout(() => {
-        navigate('/verificar', { state: { email: baseData.email } });
-      }, 1500);
-
+      setTimeout(() => navigate('/verificar', { state: { email: baseData.email } }), 1500);
     } catch (err) {
       setError(err.response?.data?.error || 'Error en el registro');
+      setLoading(false);
     }
   };
 
+  if (!baseData.rol) {
+    return <RoleSelectorModal onSelectRole={handleRoleSelection} onClose={() => navigate('/')} />;
+  }
+
   return (
-    <div className="register-container">
-      <h2>Crear Cuenta</h2>
-      
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-      {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
-      
-      <form onSubmit={handleSubmit}>
-        <fieldset>
-          <legend>Datos de la Cuenta</legend>
-          <div>
-            <label>Email:</label>
-            <input type="email" name="email" required onChange={handleBaseChange} />
-          </div>
-          <div>
-            <label>Contraseña:</label>
-            <input type="password" name="password" required onChange={handleBaseChange} />
-          </div>
-          <div>
-            <label>Tipo de Cuenta:</label>
-            <select name="rol" value={baseData.rol} onChange={handleBaseChange}>
+    <div className="register-page-wrapper">
+      <div className="register-left">
+        <span className="badge-white">REGISTRO DE CUENTA OFICIAL</span>
+        <h1 className="register-title">EcoNexo<br/>Chacras</h1>
+        <p className="register-subtitle-sm">RED AGROALIMENTARIA PROVINCIAL</p>
+        
+        <div className="quote-box">
+          <h3>El origen conecta.</h3>
+          <p>Unimos productores, emprendimientos y consumidores para construir una red más cercana, transparente y sostenible.</p>
+        </div>
+        
+        <div className="features-box">
+          <h4>EcoNexo</h4>
+          <p>Producción local · Comercio justo · Trazabilidad</p>
+          <ul className="check-list">
+            <li>✓ Sin comisiones especulativas ni intermediarios</li>
+            <li>✓ Trazabilidad de origen y logística provincial</li>
+            <li>✓ Asistencia territorial directa vía WhatsApp</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="register-right">
+        <div className="register-form-wrapper">
+          <div className="role-selector-inline">
+            <span>Rol seleccionado:</span>
+            <select name="rol" value={baseData.rol} onChange={handleBaseChange} className="role-select-inline">
               <option value="CONSUMIDOR">Consumidor</option>
               <option value="EMPRENDIMIENTO">Emprendimiento</option>
               <option value="PRODUCTOR">Productor</option>
             </select>
           </div>
-        </fieldset>
 
-        <fieldset>
-          <legend>Datos del Perfil</legend>
+          <h2>Crea tu cuenta en EcoNexo</h2>
           
-          {baseData.rol === 'CONSUMIDOR' && (
-            <>
-              <div><label>Nombre:</label><input type="text" name="nombre" required onChange={handlePerfilChange} /></div>
-              <div><label>Apellido:</label><input type="text" name="apellido" required onChange={handlePerfilChange} /></div>
-            </>
-          )}
-
-          {(baseData.rol === 'EMPRENDIMIENTO' || baseData.rol === 'PRODUCTOR') && (
-            <>
-              <div><label>Nombre de la Cuenta:</label><input type="text" name="nombreCuenta" required onChange={handlePerfilChange} /></div>
-              <div><label>Nombre del Responsable:</label><input type="text" name="nombreResponsable" required onChange={handlePerfilChange} /></div>
-              <div><label>Teléfono:</label><input type="text" name="telefono" required onChange={handlePerfilChange} /></div>
-            </>
-          )}
-
-          {baseData.rol === 'EMPRENDIMIENTO' && (
-            <div>
-              <label>Rubro:</label>
-              <select name="rubro" required onChange={handlePerfilChange}>
-                <option value="ALIMENTOS_CONSERVAS">Alimentos y Conservas</option>
-                <option value="TEXTIL_ARTESANIAS">Textil y Artesanías</option>
-                <option value="COSMETICA_NATURAL">Cosmética Natural</option>
-                <option value="RECICLAJE_SUSTENTABILIDAD">Reciclaje y Sustentabilidad</option>
-                <option value="SERVICIOS_PRODUCCION">Servicios de Producción</option>
-              </select>
-            </div>
-          )}
-
-          {baseData.rol === 'PRODUCTOR' && (
-            <>
-              <div>
-                <label>Tipo de Establecimiento:</label>
-                <select name="tipoEstablecimiento" required onChange={handlePerfilChange}>
-                  <option value="CHACRA_FAMILIAR">Chacra Familiar</option>
-                  <option value="QUINTA_HUERTA">Quinta / Huerta</option>
-                  <option value="CAMPO_PARCELA">Campo / Parcela</option>
-                  <option value="APIARIO_MONTE">Apiario / Monte</option>
-                  <option value="FINCA_FRUTALES">Finca de Frutales</option>
-                </select>
+          {error && <div className="register-alert error">{error}</div>}
+          {success && <div className="register-alert success">{success}</div>}
+          
+          <form onSubmit={handleSubmit} className="register-form">
+            
+            {/* INLINE GRID: Fila 1 -> Email y Contraseña siempre juntos */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="register-input-group">
+                <label>Correo Electrónico</label>
+                <input type="email" name="email" className="register-input" placeholder="juan@correo.com" required onChange={handleBaseChange} />
               </div>
-              
-              <div style={{ marginTop: '15px' }}>
-                <label style={{ fontWeight: 'bold' }}>Categorías de Producción (selecciona al menos una):</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
-                  {OPCIONES_CATEGORIAS.map((cat) => (
-                    <label key={cat.value} style={{ display: 'flex', alignItems: 'center', fontWeight: 'normal' }}>
-                      <input 
-                        type="checkbox" 
-                        value={cat.value}
-                        onChange={handleCheckboxChange}
-                        checked={perfilData.categorias.includes(cat.value)}
-                        style={{ marginRight: '8px' }}
-                      />
-                      {cat.label}
-                    </label>
-                  ))}
+              <div className="register-input-group">
+                <label>Contraseña</label>
+                <input type="password" name="password" className="register-input" placeholder="Mín. 6 caracteres" required onChange={handleBaseChange} />
+              </div>
+            </div>
+
+            {/* CASO: CONSUMIDOR */}
+            {baseData.rol === 'CONSUMIDOR' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="register-input-group">
+                  <label>Nombre</label>
+                  <input type="text" name="nombre" className="register-input" required onChange={handlePerfilChange} />
+                </div>
+                <div className="register-input-group">
+                  <label>Apellido</label>
+                  <input type="text" name="apellido" className="register-input" required onChange={handlePerfilChange} />
                 </div>
               </div>
-            </>
-          )}
-        </fieldset>
+            )}
 
-        <button type="submit">Registrarse</button>
-      </form>
+            {/* CASO: EMPRENDIMIENTO */}
+            {baseData.rol === 'EMPRENDIMIENTO' && (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="register-input-group">
+                    <label>Nombre del Emprendimiento</label>
+                    <input type="text" name="nombreCuenta" className="register-input" placeholder="Ej. Finca Monte Adentro" required onChange={handlePerfilChange} />
+                  </div>
+                  <div className="register-input-group">
+                    <label>Rubro</label>
+                    <select name="rubro" className="register-select" required onChange={handlePerfilChange}>
+                      <option value="ALIMENTOS_CONSERVAS">Alimentos y Conservas</option>
+                      <option value="TEXTIL_ARTESANIAS">Textil y Artesanías</option>
+                      <option value="COSMETICA_NATURAL">Cosmética Natural</option>
+                      <option value="RECICLAJE_SUSTENTABILIDAD">Reciclaje y Sustentabilidad</option>
+                      <option value="SERVICIOS_PRODUCCION">Servicios de Producción</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="register-input-group">
+                    <label>Nombre del Responsable</label>
+                    <input type="text" name="nombreResponsable" className="register-input" required onChange={handlePerfilChange} />
+                  </div>
+                  <div className="register-input-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" className="register-input" placeholder="Ej. 3704 123456" required onChange={handlePerfilChange} />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* CASO: PRODUCTOR */}
+            {baseData.rol === 'PRODUCTOR' && (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="register-input-group">
+                    <label>Nombre de tu Finca / Chacra</label>
+                    <input type="text" name="nombreCuenta" className="register-input" placeholder="Ej. Finca Monte Adentro" required onChange={handlePerfilChange} />
+                  </div>
+                  <div className="register-input-group">
+                    <label>Tipo de Establecimiento</label>
+                    <select name="tipoEstablecimiento" className="register-select" required onChange={handlePerfilChange}>
+                      <option value="CHACRA_FAMILIAR">Chacra Familiar</option>
+                      <option value="QUINTA_HUERTA">Quinta / Huerta</option>
+                      <option value="CAMPO_PARCELA">Campo / Parcela</option>
+                      <option value="APIARIO_MONTE">Apiario / Monte</option>
+                      <option value="FINCA_FRUTALES">Finca de Frutales</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="register-input-group">
+                    <label>Nombre del Responsable</label>
+                    <input type="text" name="nombreResponsable" className="register-input" required onChange={handlePerfilChange} />
+                  </div>
+                  <div className="register-input-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" className="register-input" placeholder="Ej. 3704 123456" required onChange={handlePerfilChange} />
+                  </div>
+                </div>
+                
+                <div className="register-input-group" style={{ marginTop: '0.2rem' }}>
+                  <label>Categorías de Producción</label>
+                  <div className="checkbox-grid">
+                    {OPCIONES_CATEGORIAS.map((cat) => (
+                      <label key={cat.value} className="checkbox-label">
+                        <input 
+                          type="checkbox" 
+                          value={cat.value}
+                          onChange={handleCheckboxChange}
+                          checked={perfilData.categorias.includes(cat.value)}
+                        />
+                        {cat.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            <button type="submit" className="register-btn" disabled={loading} style={{ marginTop: '0.5rem' }}>
+              {loading ? 'Procesando...' : 'Crear mi cuenta gratuita'}
+            </button>
+          </form>
+
+          <p className="register-footer">
+            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          </p>
+
+        </div>
+      </div>
     </div>
   );
 };
