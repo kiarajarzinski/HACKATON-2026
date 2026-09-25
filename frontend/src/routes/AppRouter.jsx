@@ -8,17 +8,24 @@ import { ConsumidorDashboard } from '../pages/consumidor/ConsumidorDashboard';
 import { EmprendedorDashboard } from '../pages/emprendedor/EmprendedorDashboard';
 import { ProductorDashboard } from '../pages/productor/ProductorDashboard';
 
+import { ProfilePage } from '../pages/private/ProfilePage';
+
 export const AppRouter = () => {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+
           <Route path="/" element={<AuthPage />} />
           <Route path="/verificar" element={<Verificacion />} />
+
 
           <Route path="/consumidor" element={<ConsumidorDashboard />} />
           <Route path="/emprendedor" element={<EmprendedorDashboard />} />
           <Route path="/productor" element={<ProductorDashboard />} />
+          
+
+          <Route path="/perfil" element={<ProfilePage />} />
           
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
