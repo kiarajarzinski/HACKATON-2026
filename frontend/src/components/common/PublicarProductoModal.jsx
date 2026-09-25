@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-
+import api from "../../api/axiosConfig";
 // Categorías del Productor (6 macrocategorías agrícolas de Formosa)
 const CATEGORIAS_PRODUCTOR = [
   {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../api/axiosConfig";
 
 // Motivos alineados con la lógica de moderación en la BD
 const MOTIVOS_REPORTE = [

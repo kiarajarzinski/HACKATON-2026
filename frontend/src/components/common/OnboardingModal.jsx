@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-
+import api from "../../api/axiosConfig";
 // Categorías del Productor (que elige el EMPRENDEDOR para abastecerse de materia prima)
 const CATEGORIAS_PRODUCTOR = [
   {
