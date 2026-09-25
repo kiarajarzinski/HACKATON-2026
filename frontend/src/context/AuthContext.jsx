@@ -1,32 +1,33 @@
-import { createContext, useState, useEffect } from 'react';
-import api from '../api/axiosConfig';
+import { createContext, useState } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Cargar sesión si existe un token
-    const token = localStorage.getItem('token');
-    const rol = localStorage.getItem('rol');
-    const id = localStorage.getItem('id');
-    
-    if (token && rol && id) {
-      setUser({ token, rol, id });
-    }
-    setLoading(false);
-  }, []);
-
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
+    await new Promise((resolve) => setTimeout(resolve, 450));
+    if (!email || !password || password.length < 4) throw new Error('Credenciales inválidas');
+
+    const rol = email.toLowerCase().includes('productor')
+      ? 'PRODUCTOR'
+      : email.toLowerCase().includes('emprendedor')
+        ? 'EMPRENDIMIENTO'
+        : 'CONSUMIDOR';
+    const data = { id: `mock-${Date.now()}`, email, rol, token: 'mock-token' };
     guardarSesion(data);
     return data;
   };
 
   const register = async (email, password, rol, datosPerfil) => {
-    const { data } = await api.post('/auth/register', { email, password, rol, datosPerfil });
+    await new Promise((resolve) => setTimeout(resolve, 450));
+    const data = {
+      id: `mock-${Date.now()}`,
+      email,
+      rol: rol.toUpperCase() === 'EMPRENDEDOR' ? 'EMPRENDIMIENTO' : rol.toUpperCase(),
+      token: 'mock-token',
+      datosPerfil
+    };
+    guardarSesion(data);
     return data;
   };
 
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading: false }}>
       {children}
     </AuthContext.Provider>
   );

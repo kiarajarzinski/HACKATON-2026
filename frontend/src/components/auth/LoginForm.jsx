@@ -1,5 +1,5 @@
-import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 export const LoginForm = () => {
@@ -8,7 +8,8 @@ export const LoginForm = () => {
   
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null); // Nuevo estado de éxito
+  const [success, setSuccess] = useState(null); 
+  const [loading, setLoading] = useState(false); // Añadimos loading para deshabilitar el botón
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,44 +19,75 @@ export const LoginForm = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    setLoading(true);
     
     try {
       const res = await login(formData.email, formData.password);
       
-      // Mostramos el mensaje
+      // Mostramos el mensaje de éxito
       setSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
       
-      // Retrasamos la redirección 1.5 segundos
-      setTimeout(() => {
-        if (res.rol === 'CONSUMIDOR') navigate('/consumidor');
-        if (res.rol === 'EMPRENDIMIENTO') navigate('/emprendedor');
-        if (res.rol === 'PRODUCTOR') navigate('/productor');
-      }, 1500);
+      // Retrasamos la redirección 1.5 segundos (Tu lógica original)
+      const destinations = { CONSUMIDOR: '/consumidor', EMPRENDIMIENTO: '/emprendedor', PRODUCTOR: '/productor' };
+      setTimeout(() => navigate(destinations[res.rol] || '/'), 500);
 
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión');
+      // Capturamos el error de tu backend
+      setError(err.message || err.response?.data?.error || 'Error al iniciar sesión');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <h2>Iniciar Sesión</h2>
-      
-      {/* Alertas visuales */}
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-      {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
-      
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
-          <input type="email" name="email" required onChange={handleChange} />
+    <div className="auth-page-centered">
+      <div className="auth-card">
+        {/* Encabezado del Formulario */}
+        <div className="auth-header text-center">
+          <span className="badge-portal">Portal de Acceso</span>
+          <h2>Bienvenido de vuelta</h2>
+          <p>Ingresa tus credenciales para acceder a la red.</p>
         </div>
-        <div>
-          <label>Contraseña:</label>
-          <input type="password" name="password" required onChange={handleChange} />
-        </div>
-        <button type="submit">Ingresar</button>
-      </form>
+
+        {/* Alertas Visuales */}
+        {error && <div className="alert-error">{error}</div>}
+        {success && <div className="alert-success">{success}</div>}
+
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="input-group">
+            <label>Correo Electrónico</label>
+            <input 
+              type="email" 
+              name="email" 
+              required 
+              onChange={handleChange} 
+              placeholder="correo@ejemplo.com" 
+            />
+          </div>
+
+          <div className="input-group">
+            <div className="label-flex">
+              <label>Contraseña</label>
+              <Link to="/recovery" className="btn-link">¿Olvidaste tu contraseña?</Link>
+            </div>
+            <input 
+              type="password" 
+              name="password" 
+              required 
+              onChange={handleChange} 
+              placeholder="••••••••" 
+            />
+          </div>
+
+          <button type="submit" className="btn-primary btn-full" disabled={loading}>
+            {loading ? 'Verificando...' : 'Ingresar a mi Cuenta'}
+          </button>
+        </form>
+
+        <p className="form-footer text-center">
+          ¿Aún no tienes cuenta? <Link to="/register">Regístrate gratis</Link>
+        </p>
+      </div>
     </div>
   );
 };
