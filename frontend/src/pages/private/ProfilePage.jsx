@@ -1,12 +1,13 @@
 import { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { Navbar } from '../../components/auth/Navbar';
 import { AuthContext } from '../../context/AuthContext';
 import { LocationModal } from '../../components/common/LocationModal';
-import { MisPedidos } from '../../components/common/MisPedidos'; // <-- 1. IMPORTAR EL MÓDULO DE PEDIDOS
+import { MisPedidos } from '../../components/common/MisPedidos';
 
 export const ProfilePage = () => {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext); // Añadimos logout para el navbar
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -47,9 +48,13 @@ export const ProfilePage = () => {
     }
   };
 
-  useEffect(() => { fetchProfile(); }, []);
+  useEffect(() => { 
+    fetchProfile(); 
+  }, []);
 
-  const handlePubChange = (e) => { setPubData({ ...pubData, [e.target.name]: e.target.value }); };
+  const handlePubChange = (e) => { 
+    setPubData({ ...pubData, [e.target.name]: e.target.value }); 
+  };
 
   const handleSubmitPublicacion = async (e) => {
     e.preventDefault();
@@ -85,17 +90,31 @@ export const ProfilePage = () => {
 
   const handleEliminar = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
-    try { await api.delete(`/publicaciones/${id}`); fetchProfile(); } 
-    catch (error) { alert('Error al eliminar el producto'); }
+    try { 
+      await api.delete(`/publicaciones/${id}`); 
+      fetchProfile(); 
+    } catch (error) { 
+      alert('Error al eliminar el producto'); 
+    }
   };
 
   const handleEditar = (pub) => {
-    setPubData({ titulo: pub.titulo, descripcion: pub.descripcion || '', precio: pub.precio, unidadMedida: pub.unidadMedida, stock: pub.stock, pedidoMinimo: pub.pedidoMinimo });
-    setEditingId(pub.id); setMostrarFormulario(true); window.scrollTo({ top: 0, behavior: 'smooth' });
+    setPubData({ 
+      titulo: pub.titulo, 
+      descripcion: pub.descripcion || '', 
+      precio: pub.precio, 
+      unidadMedida: pub.unidadMedida, 
+      stock: pub.stock, 
+      pedidoMinimo: pub.pedidoMinimo 
+    });
+    setEditingId(pub.id); 
+    setMostrarFormulario(true); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCerrarFormulario = () => {
-    setMostrarFormulario(false); setEditingId(null);
+    setMostrarFormulario(false); 
+    setEditingId(null);
     setPubData({ titulo: '', descripcion: '', precio: '', unidadMedida: 'Kg', stock: '', pedidoMinimo: '1' });
     setFotoFile(null);
   };
@@ -106,18 +125,157 @@ export const ProfilePage = () => {
   const { rol, consumidor, emprendimiento, productor } = profileData;
   const misPublicaciones = rol === 'PRODUCTOR' ? productor?.publicaciones : emprendimiento?.publicaciones;
   const perfilActivo = rol === 'CONSUMIDOR' ? consumidor : rol === 'PRODUCTOR' ? productor : emprendimiento;
+  
+  // const dashboardRoute = rol === 'CONSUMIDOR' ? '/consumidor' : rol === 'PRODUCTOR' ? '/productor' : '/emprendimiento';
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5fcef', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <Navbar />
-
-      <div style={{ padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto', paddingTop: '7rem' }}>
+    <div className="profile-wrapper">
+      <style>{`
+        .profile-wrapper {
+          min-height: 100vh;
+          width: 100%;
+          background-color: #f4f8f1;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          padding-top: 120px;
+          display: flex;
+          flex-direction: column;
+        }
         
-        {/* Contenedor principal dividido en dos columnas (Perfil + Productos) */}
+        /* ================= NAVBAR (Idéntico al Dashboard) ================= */
+        .cons-navbar-header {
+          position: fixed;
+          top: 20px;
+          left: 0;
+          right: 0;
+          z-index: 999;
+          padding: 0 4%;
+          pointer-events: none;
+        }
+
+        .cons-navbar-pill {
+          width: 100%;
+          max-width: 1600px;
+          margin: 0 auto;
+          pointer-events: auto;
+          background-color: rgba(240, 247, 234, 0.95);
+          backdrop-filter: blur(12px);
+          border-radius: 50px;
+          padding: 10px 24px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          box-shadow: 0 10px 30px rgba(17, 111, 34, 0.15);
+          border: 1px solid rgba(117, 201, 127, 0.2);
+        }
+
+        .cons-logo {
+          font-weight: 800;
+          color: #1a4d2e; /* Kombu green */
+          text-decoration: none;
+          font-size: 1.2rem;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .cons-nav-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .cons-icon-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 50px;
+          background-color: #136d2e;
+          color: white;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 10px rgba(117, 201, 127, 0.3);
+          text-decoration: none;
+        }
+
+        .cons-icon-btn.logout {
+          background-color: #fce7f3;
+          color: #be185d;
+          box-shadow: none;
+        }
+
+        .cons-icon-btn:hover {
+          transform: scale(1.08);
+          box-shadow: 0 6px 14px rgba(117, 201, 127, 0.4);
+        }
+
+        .cons-icon-btn.logout:hover {
+          background-color: #fbcfe8;
+          box-shadow: 0 6px 14px rgba(190, 24, 93, 0.2);
+        }
+
+        .cons-panel-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          border-radius: 50px;
+          background-color: #136d2e;
+          color: white;
+          border: none;
+          cursor: pointer;
+          text-decoration: none;
+          font-weight: bold;
+          font-size: 13px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 10px rgba(117, 201, 127, 0.3);
+        }
+
+        .cons-panel-btn:hover {
+          transform: scale(1.04);
+          box-shadow: 0 6px 14px rgba(117, 201, 127, 0.4);
+        }
+
+        /* ================= CONTENIDO PRINCIPAL DEL PERFIL ================= */
+        .profile-main {
+          width: 100%;
+          padding: 0 4%;
+          padding-bottom: 80px;
+          margin: 0 auto;
+          max-width: 1600px;
+          flex: 1;
+        }
+      `}</style>
+
+      {/* NAVBAR UNIFICADO */}
+      <header className="cons-navbar-header">
+        <div className="cons-navbar-pill">
+          <a href={rol === 'CONSUMIDOR' ? "/consumidor" : rol === 'PRODUCTOR' ? "/productor" : "/emprendimiento"} className="cons-logo">
+            <span className="material-symbols-outlined" style={{ color: '#136d2e', fontSize: '28px' }}>eco</span>
+            EcoNexo
+          </a>
+          <div className="cons-nav-actions">
+            <button onClick={() => navigate(-1)} className="cons-panel-btn">
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
+              Volver atrás
+            </button>
+            <button onClick={logout} className="cons-icon-btn logout" title="Cerrar Sesión">
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>logout</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* CONTENIDO DEL PERFIL */}
+      <main className="profile-main">
+        
+        {/* Contenedor principal dividido en dos columnas */}
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           
           {/* COLUMNA IZQUIERDA: Información del Perfil y Avatar */}
-          <div style={{ flex: '1', minWidth: '300px', backgroundColor: 'white', padding: '2rem', borderRadius: '24px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', height: 'fit-content' }}>
+          <div style={{ flex: '1', minWidth: '300px', backgroundColor: 'white', padding: '2rem', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #e3eade', height: 'fit-content' }}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               
               <label htmlFor="avatarUpload" style={{ cursor: rol !== 'CONSUMIDOR' ? 'pointer' : 'default', display: 'inline-block' }}>
@@ -207,7 +365,7 @@ export const ProfilePage = () => {
           </div>
 
           {/* COLUMNA DERECHA: Gestión de Mis Productos / Publicaciones */}
-          <div style={{ flex: '2', minWidth: '400px', backgroundColor: 'white', padding: '2rem', borderRadius: '24px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', height: 'fit-content' }}>
+          <div style={{ flex: '2', minWidth: '400px', backgroundColor: 'white', padding: '2rem', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #e3eade', height: 'fit-content' }}>
             
             {rol === 'CONSUMIDOR' ? (
               <>
@@ -222,7 +380,7 @@ export const ProfilePage = () => {
                   <h3 style={{ margin: 0, color: '#171d16' }}>Mis Productos en Vitrina</h3>
                   <button 
                     onClick={mostrarFormulario ? handleCerrarFormulario : () => setMostrarFormulario(true)}
-                    style={{ padding: '8px 16px', backgroundColor: mostrarFormulario ? '#ba1a1a' : '#136d2e', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                    style={{ padding: '8px 16px', backgroundColor: mostrarFormulario ? '#ba1a1a' : '#136d2e', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 4px 10px rgba(19, 109, 46, 0.2)' }}
                   >
                     {mostrarFormulario ? 'Cancelar' : '+ Nuevo Producto'}
                   </button>
@@ -267,7 +425,7 @@ export const ProfilePage = () => {
                           <img src={pub.fotos[0]} alt={pub.titulo} style={{ width: '100%', height: '130px', objectFit: 'cover', borderRadius: '12px', marginBottom: '10px' }} />
                         )}
                         <h4 style={{ margin: '0 0 5px 0', fontSize: '15px', color: '#171d16' }}>{pub.titulo}</h4>
-                        <h3 style={{ margin: '5px 0', color: '#136d2e', fontSize: '16px' }}>${pub.precio} <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#707a6e' }}>/ {pub.unidadMedid}</span></h3>
+                        <h3 style={{ margin: '5px 0', color: '#136d2e', fontSize: '16px' }}>${pub.precio} <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#707a6e' }}>/ {pub.unidadMedida}</span></h3>
                         <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                           <button onClick={() => handleEditar(pub)} style={{ flex: 1, padding: '6px', backgroundColor: '#ede49f', color: '#4d4812', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>Editar</button>
                           <button onClick={() => handleEliminar(pub.id)} style={{ flex: 1, padding: '6px', backgroundColor: '#ffdad6', color: '#93000a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>Eliminar</button>
@@ -281,15 +439,16 @@ export const ProfilePage = () => {
           </div>
 
         </div>
-          {/* SECCIÓN DE IDENTIDAD Y SOBERANÍA ALIMENTARIA (SOLO PARA PRODUCTORES Y EMPRENDIMIENTOS) */}
+
+        {/* SECCIÓN DE IDENTIDAD Y SOBERANÍA ALIMENTARIA (SOLO PARA PRODUCTORES Y EMPRENDIMIENTOS) */}
         {rol !== 'CONSUMIDOR' && (
           <div style={{ 
-            backgroundColor: '#f5fcef', 
+            backgroundColor: '#ffffff', 
             borderRadius: '24px', 
             padding: '2.5rem', 
             marginTop: '2rem', 
             border: '1px solid #e3eade',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
             fontFamily: "'Plus Jakarta Sans', sans-serif"
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#136d2e', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
@@ -308,10 +467,9 @@ export const ProfilePage = () => {
               Aquí no se utilizan herbicidas ni fertilizantes químicos sintéticos. Los espacios de producción se nutren de abono orgánico compuesto, mulch vegetal para retener humedad frente a las altas temperaturas, y prácticas de comercio justo sin intermediarios usureros.
             </p>
 
-            {/* Grid de Características (3 Tarjetas inferiores) */}
+            {/* Grid de Características */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              
-              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
+              <div style={{ backgroundColor: '#f4f8f1', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '14px', color: '#171d16', marginBottom: '4px' }}>
                   <span>💧</span> Riego Eficiente
                 </div>
@@ -320,7 +478,7 @@ export const ProfilePage = () => {
                 </p>
               </div>
 
-              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
+              <div style={{ backgroundColor: '#f4f8f1', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '14px', color: '#171d16', marginBottom: '4px' }}>
                   <span>♻️</span> Abono Natural
                 </div>
@@ -329,7 +487,7 @@ export const ProfilePage = () => {
                 </p>
               </div>
 
-              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
+              <div style={{ backgroundColor: '#f4f8f1', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '14px', color: '#171d16', marginBottom: '4px' }}>
                   <span>🌳</span> Trabajo Familiar
                 </div>
@@ -337,14 +495,28 @@ export const ProfilePage = () => {
                   Comercio justo directo sin intermediarios usureros.
                 </p>
               </div>
-
             </div>
           </div>
         )}
-        {/* 2. INYECTAR EL MÓDULO DE PEDIDOS ABAJO EN EL PERFIL */}
+
+        {/* INYECTAR EL MÓDULO DE PEDIDOS ABAJO EN EL PERFIL */}
         <MisPedidos />
 
-      </div>
+      </main>
+
+      {/* FOOTER UNIFICADO */}
+      <footer style={{ backgroundColor: '#1a4d2e', color: '#f0f7ea', padding: '64px 24px 32px', textAlign: 'center', marginTop: 'auto', borderTop: '4px solid #136d2e' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+          <span className="material-symbols-outlined" style={{ color: '#136d2e', fontSize: '36px' }}>eco</span>
+          <span style={{ fontSize: '1.75rem', fontWeight: '800', color: 'white', letterSpacing: '-0.02em' }}>EcoNexo</span>
+        </div>
+        <p style={{ opacity: 0.8, fontSize: '1rem', marginBottom: '32px', maxWidth: '400px', margin: '0 auto 32px' }}>
+          Conectando la red agroecológica y emprendedora de Formosa de manera directa, segura y sin intermediarios.
+        </p>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px', fontSize: '0.85rem', opacity: 0.6, fontWeight: '500' }}>
+          © 2026 EcoNexo. Todos los derechos reservados.
+        </div>
+      </footer>
 
       {showLocationModal && (
         <LocationModal 
@@ -363,5 +535,5 @@ export const ProfilePage = () => {
   );
 };
 
-const inputStyle = { padding: '8px 12px', borderRadius: '8px', border: '1px solid #bfcabb', boxSizing: 'border-box', backgroundColor: 'white' };
-const btnEditLocation = { padding: '4px 10px', fontSize: '12px', backgroundColor: '#c2ed96', color: '#486c25', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' };
+const inputStyle = { padding: '10px 12px', borderRadius: '12px', border: '1px solid #bfcabb', boxSizing: 'border-box', backgroundColor: '#fcfdfa', fontSize: '14px', outline: 'none' };
+const btnEditLocation = { padding: '6px 12px', fontSize: '12px', backgroundColor: '#c2ed96', color: '#1a4d2e', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' };
