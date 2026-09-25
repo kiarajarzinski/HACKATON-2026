@@ -1,0 +1,152 @@
+/* =========================================
+   ESTILOS DEL HERO SECTION
+   ========================================= */
+
+/* Degradados superpuestos a la imagen de fondo */
+.fondo-gradiente-hero {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(30, 51, 24, 0.95), rgba(30, 51, 24, 0.85), transparent),
+              linear-gradient(to top, rgba(30, 51, 24, 1), transparent);
+}
+
+/* Etiqueta superior ("Red Agroproductiva") */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  background-color: rgba(255, 250, 224, 0.15); /* Cornsilk con transparencia */
+  border: 1px solid rgba(238, 229, 159, 0.4); /* Vanilla Custard */
+  color: #EEE59F;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+  backdrop-filter: blur(12px);
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #AAD480; /* Willow Green */
+}
+
+/* Efecto de texto dorado/verdoso */
+.texto-gradiente {
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-image: linear-gradient(to right, #AAD480, #EEE59F, #FFFAE0);
+}
+
+/* =========================================
+   TARJETAS DEL HERO (OPCIÓN A Y B)
+   ========================================= */
+
+.tarjeta-hero {
+  position: relative;
+  border-radius: 24px;
+  padding: 28px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Estilo Glassmorphism (Opción A) */
+.tarjeta-vidrio {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.tarjeta-vidrio:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Estilo Oscuro Sólido (Opción B) */
+.tarjeta-oscura {
+  background-color: rgba(45, 71, 34, 0.75); /* Dark Moss con transparencia */
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(170, 212, 128, 0.3); /* Willow Green */
+}
+
+/* =========================================
+   ELEMENTOS INTERNOS DE LAS TARJETAS
+   ========================================= */
+
+.icono-circulo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.bg-esmeralda { background-color: rgba(117, 201, 127, 0.8); }
+.bg-verde-claro { background-color: #AAD480; }
+.text-verde-claro { color: #AAD480; }
+
+.etiqueta-pequena {
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.footer-tarjeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   BOTONES
+   ========================================= */
+
+.boton-principal {
+  background-color: #75C97F; /* Emerald */
+  color: #1e3318; /* Kombu Green */
+  padding: 12px 24px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.boton-principal:hover {
+  background-color: #AAD480; /* Willow Green */
+}
+
+.boton-secundario {
+  background-color: #FFFAE0; /* Cornsilk */
+  color: #1e3318; /* Kombu Green */
+  padding: 12px 24px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.boton-secundario:hover {
+  background-color: #ffffff;
+}

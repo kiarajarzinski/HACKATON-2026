@@ -1,0 +1,17 @@
+.layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-main {
+  flex: 1;
+}
+
+.layout-footer {
+  background-color: var(--kombu-green);
+  color: var(--cornsilk);
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 14px;
+}

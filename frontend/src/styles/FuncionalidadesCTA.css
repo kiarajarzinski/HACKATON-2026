@@ -1,0 +1,241 @@
+/* =========================================
+   CONTENEDOR PRINCIPAL
+   ========================================= */
+.func-cta-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 64px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* =========================================
+   TARJETA SUPERIOR (B2B)
+   ========================================= */
+.func-b2b-card {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--honeydew);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .func-b2b-card { flex-direction: row; }
+}
+
+/* Lado Izquierdo (Imagen) */
+.func-b2b-img-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+}
+
+@media (min-width: 768px) {
+  .func-b2b-img-wrapper { width: 50%; }
+}
+
+.func-b2b-img-wrapper img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.func-b2b-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.func-b2b-overlay:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.func-btn-float {
+  background-color: var(--emerald);
+  color: white;
+  font-weight: 700;
+  padding: 12px 32px;
+  border-radius: 50px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 20px rgba(117, 201, 127, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.func-btn-float:hover {
+  transform: scale(1.05);
+  background-color: var(--dark-moss);
+}
+
+/* Lado Derecho (Contenido) */
+.func-b2b-content {
+  padding: 32px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .func-b2b-content { width: 50%; padding: 48px; }
+}
+
+.func-tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--honeydew);
+  margin-bottom: 32px;
+}
+
+.func-tab-btn {
+  background: none;
+  border: none;
+  padding-bottom: 12px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #9ca3af;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.func-tab-btn:hover { color: #4b5563; }
+
+.func-tab-btn.active { color: var(--emerald); }
+.func-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--emerald);
+}
+
+.func-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 220px;
+}
+
+.func-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.func-list-icon { color: var(--emerald); margin-top: 2px; }
+.func-list-text { color: #4b5563; line-height: 1.6; }
+.func-list-text strong { color: var(--kombu-green); }
+
+/* =========================================
+   TARJETA INFERIOR (B2C)
+   ========================================= */
+.func-b2c-card {
+  background: linear-gradient(to bottom right, #f0fdf4, #dcfce7); /* Gradiente suave */
+  border-radius: 24px;
+  padding: 32px;
+  border: 1px solid #bbf7d0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .func-b2c-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 48px;
+  }
+}
+
+.func-b2c-info { width: 100%; }
+@media (min-width: 768px) { .func-b2c-info { width: 66.666%; } }
+
+.func-b2c-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #022c22;
+  margin-bottom: 8px;
+}
+
+.func-b2c-subtitle {
+  font-size: 1.125rem;
+  color: #065f46;
+  margin-bottom: 24px;
+}
+
+.func-b2c-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .func-b2c-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.func-feature-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.func-feature-icon-wrapper {
+  background-color: #d1fae5;
+  color: #047857;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.func-feature-title { font-weight: 700; color: #064e3b; }
+.func-feature-desc { font-size: 0.875rem; color: #047857; margin-top: 4px; }
+
+.func-b2c-action {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .func-b2c-action { width: 33.333%; justify-content: flex-end; }
+}
+
+.func-btn-explore {
+  background-color: #047857;
+  color: white;
+  font-weight: 700;
+  padding: 16px 32px;
+  border-radius: 50px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 15px -3px rgba(4, 120, 87, 0.3);
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.func-btn-explore:hover {
+  background-color: #065f46;
+  transform: translateY(-4px);
+}

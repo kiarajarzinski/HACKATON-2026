@@ -1,10 +1,14 @@
-import { AppRouter } from './routes/AppRouter';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Home } from './pages/public/Home';
 
 function App() {
   return (
-    <div className="App">
-      <AppRouter />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

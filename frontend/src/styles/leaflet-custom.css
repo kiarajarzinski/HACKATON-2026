@@ -1,0 +1,25 @@
+/* Quita el fondo blanco por defecto del divIcon para que se vea solo nuestro emoji */
+.custom-leaflet-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Modifica la caja de información emergente del mapa */
+.leaflet-popup-content-wrapper {
+  @apply rounded-2xl shadow-xl bg-honeydew border border-vanilla-custard !important;
+}
+
+/* Modifica el "pico" o flecha de la caja de información */
+.leaflet-popup-tip {
+  @apply bg-honeydew !important;
+}
+
+/* Texto dentro del popup */
+.leaflet-popup-content {
+  @apply font-sans font-bold text-kombu-green m-3 !important;
+}
+
+/* Esconde el botón de cerrar default del mapa si es necesario */
+.leaflet-popup-close-button {
+  @apply text-dark-moss hover:text-emerald mt-1 mr-1 !important;
+}

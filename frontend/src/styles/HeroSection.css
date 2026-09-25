@@ -1,0 +1,51 @@
+.hero-section {
+  background-color: var(--kombu-green);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 120px 20px 60px 20px;
+  color: white;
+}
+
+.hero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@media (min-width: 768px) {
+  .hero-container {
+    flex-direction: row;
+    align-items: center;
+  }
+  .hero-text-side, .hero-cards-side {
+    flex: 1;
+  }
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.hero-highlight {
+  color: var(--willow-green);
+}
+
+.hero-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.hero-card-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
