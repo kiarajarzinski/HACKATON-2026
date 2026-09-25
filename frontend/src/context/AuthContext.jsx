@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password, rol, datosPerfil) => {
     const { data } = await api.post('/auth/register', { email, password, rol, datosPerfil });
-    guardarSesion(data);
     return data;
   };
 
