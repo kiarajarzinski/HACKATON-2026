@@ -19,9 +19,34 @@ export const registerUser = async ({ email, password, rol, datosPerfil }) => {
     });
     
     if (rol === 'PRODUCTOR') {
-      await tx.productor.create({
-        data: { ...datosPerfil, usuarioId: user.id }
+      // Extraemos las categorías del array enviado por el frontend
+      const { categorias, ...restoDatos } = datosPerfil;
+
+      // Buscamos los IDs de las categorías en la base de datos usando sus códigos
+      const categoriasDb = await tx.categorias_produccion.findMany({
+        where: {
+          codigo: { in: categorias }
+        }
       });
+
+      if (categoriasDb.length !== categorias.length) {
+        throw new Error('Una o más categorías seleccionadas no son válidas o no existen en la base de datos.');
+      }
+
+      // Creamos el Productor y sus relaciones en la tabla intermedia productor_categorias
+      await tx.productor.create({
+        data: {
+          ...restoDatos,
+          usuarioId: user.id,
+          productor_categorias: {
+            create: categoriasDb.map(cat => ({
+              categoriaId: cat.id
+              // enTemporada tomará el valor por defecto (true) definido en el schema
+            }))
+          }
+        }
+      });
+
     } else if (rol === 'EMPRENDIMIENTO') {
       await tx.emprendimiento.create({
         data: { ...datosPerfil, usuarioId: user.id }
@@ -35,30 +60,20 @@ export const registerUser = async ({ email, password, rol, datosPerfil }) => {
     return user;
   });
 
-  // 5. Generar y retornar JWT
   const token = generarToken(nuevoUsuario);
   return { token, rol: nuevoUsuario.rol, id: nuevoUsuario.id };
 };
 
 export const loginUser = async ({ email, password }) => {
-  // 1. Buscar usuario
   const usuario = await prisma.usuario.findUnique({ where: { email } });
-  if (!usuario) {
-    throw new Error('Credenciales inválidas');
-  }
+  if (!usuario) throw new Error('Credenciales inválidas');
 
-  // 2. Verificar contraseña
   const isMatch = await bcrypt.compare(password, usuario.password);
-  if (!isMatch) {
-    throw new Error('Credenciales inválidas');
-  }
+  if (!isMatch) throw new Error('Credenciales inválidas');
 
-  // 3. Generar y retornar JWT
   const token = generarToken(usuario);
   return { token, rol: usuario.rol, id: usuario.id };
 };
-
-// --- Funciones Auxiliares Privadas ---
 
 const generarToken = (usuario) => {
   return jwt.sign(
@@ -73,8 +88,9 @@ const validarDatosPerfil = (rol, datos) => {
 
   switch (rol) {
     case 'PRODUCTOR':
-      if (!datos.nombreCuenta || !datos.nombreResponsable || !datos.telefono || !datos.tipoEstablecimiento) {
-        throw new Error('Faltan campos obligatorios para Productor');
+      // Validamos que exista el array de categorías y no esté vacío
+      if (!datos.nombreCuenta || !datos.nombreResponsable || !datos.telefono || !datos.tipoEstablecimiento || !Array.isArray(datos.categorias) || datos.categorias.length === 0) {
+        throw new Error('Faltan campos obligatorios para Productor (debe seleccionar al menos una categoría)');
       }
       break;
     case 'EMPRENDIMIENTO':

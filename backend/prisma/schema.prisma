@@ -45,15 +45,38 @@ model Consumidor {
 }
 
 model Productor {
-  id                  String              @id @default(uuid())
-  nombreCuenta        String
-  nombreResponsable   String
-  telefono            String
-  tipoEstablecimiento TipoEstablecimiento
-  usuarioId           String              @unique
-  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id                   String                 @id @default(uuid())
+  nombreCuenta         String
+  nombreResponsable    String
+  telefono             String
+  tipoEstablecimiento  TipoEstablecimiento
+  usuarioId            String                 @unique
+  productor_categorias productor_categorias[]
+  usuario              Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("productores")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model categorias_produccion {
+  id                   String                 @id @default(dbgenerated("(gen_random_uuid())::text"))
+  codigo               CategoriaEnum          @unique
+  nombre               String
+  descripcion          String?
+  productor_categorias productor_categorias[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model productor_categorias {
+  id                    String                @id @default(dbgenerated("(gen_random_uuid())::text"))
+  productorId           String
+  categoriaId           String
+  enTemporada           Boolean?              @default(true)
+  descripcionCorta      String?
+  categorias_produccion categorias_produccion @relation(fields: [categoriaId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  productores           Productor             @relation(fields: [productorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([productorId, categoriaId])
 }
 
 enum RolUsuario {
@@ -76,4 +99,13 @@ enum TipoEstablecimiento {
   CAMPO_PARCELA
   APIARIO_MONTE
   FINCA_FRUTALES
+}
+
+enum CategoriaEnum {
+  AGRICULTURA_EXTENSIVA
+  FRUTIHORTICOLA
+  GANADERIA
+  APICULTURA
+  PISCICULTURA
+  FORESTAL
 }

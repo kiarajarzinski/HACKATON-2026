@@ -2,12 +2,22 @@ import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
+// Lista constante de categorías para generar los checkboxes dinámicamente
+const OPCIONES_CATEGORIAS = [
+  { value: 'AGRICULTURA_EXTENSIVA', label: 'Agricultura Extensiva' },
+  { value: 'FRUTIHORTICOLA', label: 'Frutihortícola' },
+  { value: 'GANADERIA', label: 'Ganadería' },
+  { value: 'APICULTURA', label: 'Apicultura' },
+  { value: 'PISCICULTURA', label: 'Piscicultura' },
+  { value: 'FORESTAL', label: 'Forestal' }
+];
+
 export const RegisterForm = () => {
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null); // Nuevo estado de éxito
+  const [success, setSuccess] = useState(null);
   
   const [baseData, setBaseData] = useState({ email: '', password: '', rol: 'CONSUMIDOR' });
   const [perfilData, setPerfilData] = useState({ nombre: '', apellido: '' });
@@ -19,7 +29,8 @@ export const RegisterForm = () => {
     if (name === 'rol') {
       if (value === 'CONSUMIDOR') setPerfilData({ nombre: '', apellido: '' });
       if (value === 'EMPRENDIMIENTO') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', rubro: 'ALIMENTOS_CONSERVAS' });
-      if (value === 'PRODUCTOR') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', tipoEstablecimiento: 'CHACRA_FAMILIAR' });
+      // Agregamos 'categorias' inicializado como un array vacío
+      if (value === 'PRODUCTOR') setPerfilData({ nombreCuenta: '', nombreResponsable: '', telefono: '', tipoEstablecimiento: 'CHACRA_FAMILIAR', categorias: [] });
     }
   };
 
@@ -27,18 +38,36 @@ export const RegisterForm = () => {
     setPerfilData({ ...perfilData, [e.target.name]: e.target.value });
   };
 
+  // Nuevo controlador específico para manejar checkboxes múltiples
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    let nuevasCategorias = [...perfilData.categorias];
+    
+    if (checked) {
+      nuevasCategorias.push(value);
+    } else {
+      nuevasCategorias = nuevasCategorias.filter(cat => cat !== value);
+    }
+    
+    setPerfilData({ ...perfilData, categorias: nuevasCategorias });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
+    // Validación extra en frontend para Productor
+    if (baseData.rol === 'PRODUCTOR' && perfilData.categorias.length === 0) {
+      setError('Debes seleccionar al menos una categoría de producción.');
+      return;
+    }
+
     try {
       const res = await register(baseData.email, baseData.password, baseData.rol, perfilData);
       
-      // Mostramos el mensaje
       setSuccess('¡Registro exitoso! Redirigiendo...');
       
-      // Retrasamos la redirección 1.5 segundos
       setTimeout(() => {
         if (res.rol === 'CONSUMIDOR') navigate('/consumidor');
         if (res.rol === 'EMPRENDIMIENTO') navigate('/emprendedor');
@@ -54,12 +83,10 @@ export const RegisterForm = () => {
     <div className="register-container">
       <h2>Crear Cuenta</h2>
       
-      {/* Alertas visuales */}
       {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
       {success && <div style={{ color: 'green', fontWeight: 'bold', marginBottom: '10px' }}>{success}</div>}
       
       <form onSubmit={handleSubmit}>
-        {/* --- DATOS BASE DEL USUARIO --- */}
         <fieldset>
           <legend>Datos de la Cuenta</legend>
           <div>
@@ -80,7 +107,6 @@ export const RegisterForm = () => {
           </div>
         </fieldset>
 
-        {/* --- DATOS DINÁMICOS DEL PERFIL --- */}
         <fieldset>
           <legend>Datos del Perfil</legend>
           
@@ -113,16 +139,36 @@ export const RegisterForm = () => {
           )}
 
           {baseData.rol === 'PRODUCTOR' && (
-            <div>
-              <label>Tipo de Establecimiento:</label>
-              <select name="tipoEstablecimiento" required onChange={handlePerfilChange}>
-                <option value="CHACRA_FAMILIAR">Chacra Familiar</option>
-                <option value="QUINTA_HUERTA">Quinta / Huerta</option>
-                <option value="CAMPO_PARCELA">Campo / Parcela</option>
-                <option value="APIARIO_MONTE">Apiario / Monte</option>
-                <option value="FINCA_FRUTALES">Finca de Frutales</option>
-              </select>
-            </div>
+            <>
+              <div>
+                <label>Tipo de Establecimiento:</label>
+                <select name="tipoEstablecimiento" required onChange={handlePerfilChange}>
+                  <option value="CHACRA_FAMILIAR">Chacra Familiar</option>
+                  <option value="QUINTA_HUERTA">Quinta / Huerta</option>
+                  <option value="CAMPO_PARCELA">Campo / Parcela</option>
+                  <option value="APIARIO_MONTE">Apiario / Monte</option>
+                  <option value="FINCA_FRUTALES">Finca de Frutales</option>
+                </select>
+              </div>
+              
+              <div style={{ marginTop: '15px' }}>
+                <label style={{ fontWeight: 'bold' }}>Categorías de Producción (selecciona al menos una):</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                  {OPCIONES_CATEGORIAS.map((cat) => (
+                    <label key={cat.value} style={{ display: 'flex', alignItems: 'center', fontWeight: 'normal' }}>
+                      <input 
+                        type="checkbox" 
+                        value={cat.value}
+                        onChange={handleCheckboxChange}
+                        checked={perfilData.categorias.includes(cat.value)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      {cat.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </fieldset>
 
