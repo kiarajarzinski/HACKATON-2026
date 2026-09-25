@@ -19,7 +19,7 @@ export const Navbar = () => {
     }}>
       {/* Usamos Link para volver al dashboard correspondiente al hacer clic en el título */}
       <Link to={`/${user?.rol?.toLowerCase() || ''}`} style={{ color: 'white', textDecoration: 'none' }}>
-        <h2 style={{ margin: 0 }}>Mi Hackathon</h2>
+        <h2 style={{ margin: 0 }}>EkoNexo</h2>
       </Link>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>

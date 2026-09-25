@@ -47,24 +47,22 @@ export const FeedProductos = ({ titulo }) => {
     }
   };
 
-  const handleWhatsApp = () => {
+  // Generación segura del enlace de WhatsApp
+  const getWhatsAppUrl = () => {
     const pub = pedidoModal.producto;
+    if (!pub) return '#';
+    
     const vendedor = pub.productores || pub.emprendimientos;
     const telefono = vendedor?.telefono;
     
-    if (!telefono) {
-      alert("El vendedor no tiene un teléfono registrado.");
-      return;
-    }
+    if (!telefono) return '#';
 
     const telefonoLimpio = telefono.replace(/\D/g, '');
     const total = (pub.precio * pedidoModal.cantidad).toLocaleString('es-AR');
     
     const mensaje = `¡Hola ${vendedor.nombreCuenta}! Me interesa tu producto de la plataforma:\n\n*${pub.titulo}*\n Cantidad: ${pedidoModal.cantidad} ${pub.unidadMedida}\n Total estimado a abonar: $${total}\n\n¿Podemos coordinar la entrega y el pago?`;
     
-    const url = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
-    window.open(url, '_blank');
-    cerrarModal();
+    return `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
   };
 
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando mercado...</div>;
@@ -132,7 +130,7 @@ export const FeedProductos = ({ titulo }) => {
         </div>
       )}
 
-      {/* MODAL DE PEDIDO REDISEÑADO Y BIEN UBICADO */}
+      {/* MODAL DE PEDIDO REDISEÑADO */}
       {pedidoModal.show && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999, overflowY: 'auto', padding: '20px' }}>
           
@@ -154,7 +152,7 @@ export const FeedProductos = ({ titulo }) => {
               </div>
             </div>
 
-            {/* Ficha del Producto (SIN PAIPPA) */}
+            {/* Ficha del Producto */}
             <div style={{ backgroundColor: '#f5fcef', borderRadius: '16px', padding: '16px', display: 'flex', gap: '16px', marginBottom: '20px', alignItems: 'center' }}>
               {pedidoModal.producto.fotos && pedidoModal.producto.fotos.length > 0 && (
                 <img src={pedidoModal.producto.fotos[0]} alt="prod" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
@@ -215,16 +213,23 @@ export const FeedProductos = ({ titulo }) => {
               </div>
             </div>
 
-            {/* Botones de acción */}
+            {/* Botones de acción (Usando etiqueta <a> para evitar bloqueo de popup en navegadores) */}
             <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
               <button onClick={cerrarModal} style={{ padding: '14px 24px', backgroundColor: '#eff6e9', color: '#171d16', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>
                 Cancelar
               </button>
-              <button onClick={handleWhatsApp} style={{ flex: 1, padding: '14px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)' }}>
+              
+              <a 
+                href={getWhatsAppUrl()} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                onClick={cerrarModal}
+                style={{ flex: 1, padding: '14px', backgroundColor: '#25D366', color: 'white', textDecoration: 'none', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)' }}
+              >
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chat</span>
                 Confirmar y Abrir WhatsApp
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>arrow_forward</span>
-              </button>
+              </a>
             </div>
 
             {/* Footer lock */}
