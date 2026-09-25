@@ -17,4 +17,4 @@ export const EmprendedorDashboard = () => {
       </div>
     </div>
   );
-};
+};    
