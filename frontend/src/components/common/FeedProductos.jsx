@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../../api/axiosConfig';
+import { AuthContext } from '../../context/AuthContext';
 
 export const FeedProductos = ({ titulo }) => {
+  // 1. Traemos al usuario del contexto para saber su rol
+  const { user } = useContext(AuthContext);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,12 +42,15 @@ export const FeedProductos = ({ titulo }) => {
             
             return (
               <div key={pub.id} style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
+                {/* Cabecera de la tarjeta */}
                 <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderBottom: '1px solid #eee' }}>
                   <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#2c3e50' }}>{pub.titulo}</h3>
                   <p style={{ margin: 0, fontSize: '12px', color: '#7f8c8d' }}>
                     Vendedor: <b>{vendedor?.nombreCuenta}</b> 📍 {vendedor?.localidad || 'Ubicación no definida'}
                   </p>
                 </div>
+                
+                {/* Imagen del producto */}
                 {pub.fotos && pub.fotos.length > 0 && (
                   <img 
                     src={pub.fotos[0]} 
@@ -52,6 +58,8 @@ export const FeedProductos = ({ titulo }) => {
                     style={{ width: '100%', height: '180px', objectFit: 'cover' }} 
                   />
                 )}
+                
+                {/* Cuerpo de la tarjeta */}
                 <div style={{ padding: '15px', flexGrow: 1 }}>
                   <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#555', height: '40px', overflow: 'hidden' }}>
                     {pub.descripcion || 'Sin descripción detallada.'}
@@ -65,11 +73,15 @@ export const FeedProductos = ({ titulo }) => {
                   </div>
                 </div>
 
-                <div style={{ padding: '15px', paddingTop: '0' }}>
-                  <button style={{ width: '100%', padding: '10px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                    Agregar al Pedido
-                  </button>
-                </div>
+                {/* 2. Condicionamos la aparición del botón según el rol */}
+                {user?.rol !== 'PRODUCTOR' && (
+                  <div style={{ padding: '15px', paddingTop: '0' }}>
+                    <button style={{ width: '100%', padding: '10px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      Agregar al Pedido
+                    </button>
+                  </div>
+                )}
+
               </div>
             );
           })}
