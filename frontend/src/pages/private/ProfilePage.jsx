@@ -281,7 +281,66 @@ export const ProfilePage = () => {
           </div>
 
         </div>
+          {/* SECCIÓN DE IDENTIDAD Y SOBERANÍA ALIMENTARIA (SOLO PARA PRODUCTORES Y EMPRENDIMIENTOS) */}
+        {rol !== 'CONSUMIDOR' && (
+          <div style={{ 
+            backgroundColor: '#f5fcef', 
+            borderRadius: '24px', 
+            padding: '2.5rem', 
+            marginTop: '2rem', 
+            border: '1px solid #e3eade',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
+            fontFamily: "'Plus Jakarta Sans', sans-serif"
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#136d2e', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+              <span>🌱</span> IDENTIDAD & SOBERANÍA ALIMENTARIA
+            </div>
+            
+            <h2 style={{ fontSize: '26px', color: '#171d16', marginTop: 0, marginBottom: '16px', fontWeight: '700' }}>
+              Conocé quién está detrás de la cosecha
+            </h2>
+            
+            <p style={{ color: '#40493f', fontSize: '15px', lineHeight: '1.7', marginBottom: '16px' }}>
+              {rol === 'PRODUCTOR' ? (productor?.nombreCuenta || 'El productor') : (emprendimiento?.nombreCuenta || 'El emprendimiento')} trabaja junto a su familia en los suelos fértiles de Formosa. Desde hace generaciones cultivan productos agroecológicos, hortalizas de estación y elaboraciones artesanales respetando los ciclos biológicos naturales de la región subtropical.
+            </p>
+            
+            <p style={{ color: '#40493f', fontSize: '15px', lineHeight: '1.7', marginBottom: '2rem' }}>
+              Aquí no se utilizan herbicidas ni fertilizantes químicos sintéticos. Los espacios de producción se nutren de abono orgánico compuesto, mulch vegetal para retener humedad frente a las altas temperaturas, y prácticas de comercio justo sin intermediarios usureros.
+            </p>
 
+            {/* Grid de Características (3 Tarjetas inferiores) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              
+              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '14px', color: '#171d16', marginBottom: '4px' }}>
+                  <span>💧</span> Riego Eficiente
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: '#40493f', lineHeight: '1.4' }}>
+                  Goteo de precisión y cosecha de agua de lluvia.
+                </p>
+              </div>
+
+              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '14px', color: '#171d16', marginBottom: '4px' }}>
+                  <span>♻️</span> Abono Natural
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: '#40493f', lineHeight: '1.4' }}>
+                  Biofertilizantes y lombricompuesto propio.
+                </p>
+              </div>
+
+              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #dee5d8' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '14px', color: '#171d16', marginBottom: '4px' }}>
+                  <span>🌳</span> Trabajo Familiar
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: '#40493f', lineHeight: '1.4' }}>
+                  Comercio justo directo sin intermediarios usureros.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        )}
         {/* 2. INYECTAR EL MÓDULO DE PEDIDOS ABAJO EN EL PERFIL */}
         <MisPedidos />
 
