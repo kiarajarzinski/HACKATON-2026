@@ -1,15 +1,35 @@
 /* =========================================
    1. RADAR DE FRESCURA (Tarjetas de Oferta/Urgencia)
    ========================================= */
-.radar-card-oferta {
-  background: linear-gradient(to bottom, rgba(117, 201, 127, 0.12), #ffffff);
+.radar-card-oferta:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 25px -5px rgba(0, 150, 50, 0.15);
+}
+
+/* La tarjeta ahora es un <button>: quitamos los estilos nativos y la hacemos clickeable */
+.radar-card-clickable {
   border: 2px solid var(--emerald);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  padding: 0;
+}
+
+.radar-card-clickable:focus-visible {
+  outline: 3px solid var(--willow-green);
+  outline-offset: 2px;
+}
+
+.radar-ver-mapa {
+  margin-top: auto;
+  padding-top: 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--palm-leaf);
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .radar-card-oferta:hover {

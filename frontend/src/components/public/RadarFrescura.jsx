@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { radarMapaCalor } from '../../assets/radarData';
+import { MapaCalorModal } from './MapaCalorModal';
 
 // Ampliamos a 4 elementos para llenar la grilla
 const alertasFrescura = [
@@ -9,17 +11,27 @@ const alertasFrescura = [
 ];
 
 export const RadarFrescura = () => {
+  const [itemActivo, setItemActivo] = useState(null);
+
   return (
     <section className="container-max" style={{ padding: '64px 20px' }} id="radar">
       <h2 className="section-title">
         <span className="material-symbols-outlined" style={{ color: 'var(--emerald)' }}>timer</span> 
         Radar de Frescura
       </h2>
+      <p style={{ marginTop: '-24px', marginBottom: '32px', color: 'var(--dark-moss)', fontSize: '0.9rem' }}>
+        Tocá una tarjeta para ver el mapa de calor de productores y el perfil del productor destacado.
+      </p>
       
       {/* Contenedor Grid Responsivo: 1 col (móvil), 2 cols (tablet), 4 cols (escritorio) */}
       <div className="grid-base grid-sm-2 grid-md-4">
         {alertasFrescura.map((item) => (
-          <div key={item.id} className="radar-card-oferta">
+          <button
+            key={item.id}
+            className="radar-card-oferta radar-card-clickable"
+            onClick={() => setItemActivo(item.id)}
+            aria-label={`Ver mapa de calor de ${item.prod}`}
+          >
             
             <div className="radar-img-wrapper-vertical">
               <div className="radar-badge-urgencia">¡Alta Demanda!</div>
@@ -32,11 +44,20 @@ export const RadarFrescura = () => {
                 <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>schedule</span>
                 {item.tiempo}
               </span>
+              <span className="radar-ver-mapa">
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>local_fire_department</span>
+                Ver mapa de calor
+              </span>
             </div>
             
-          </div>
+          </button>
         ))}
       </div>
+
+      <MapaCalorModal
+        data={itemActivo ? radarMapaCalor[itemActivo] : null}
+        onClose={() => setItemActivo(null)}
+      />
     </section>
   );
 };
