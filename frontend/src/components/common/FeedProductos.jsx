@@ -28,12 +28,23 @@ export const FeedProductos = ({ titulo }) => {
     setPedidoModal({
       show: true,
       producto: pub,
-      cantidad: pub.pedidoMinimo || 1 // Inicia con el pedido mínimo exigido
+      cantidad: parseFloat(pub.pedidoMinimo || 1)
     });
   };
 
   const cerrarModal = () => {
     setPedidoModal({ show: false, producto: null, cantidad: 1 });
+  };
+
+  const handleIncrement = () => {
+    setPedidoModal(prev => ({ ...prev, cantidad: prev.cantidad + 1 }));
+  };
+
+  const handleDecrement = () => {
+    const min = parseFloat(pedidoModal.producto.pedidoMinimo || 1);
+    if (pedidoModal.cantidad > min) {
+      setPedidoModal(prev => ({ ...prev, cantidad: prev.cantidad - 1 }));
+    }
   };
 
   const handleWhatsApp = () => {
@@ -46,12 +57,10 @@ export const FeedProductos = ({ titulo }) => {
       return;
     }
 
-    // Limpiamos el número de símbolos (ej: +54 9 11... -> 54911...)
     const telefonoLimpio = telefono.replace(/\D/g, '');
-    const total = (pub.precio * pedidoModal.cantidad).toFixed(2);
+    const total = (pub.precio * pedidoModal.cantidad).toLocaleString('es-AR');
     
-    // Armamos un lindo mensaje predeterminado
-    const mensaje = `¡Hola ${vendedor.nombreCuenta}!  Me interesa tu producto de la plataforma:\n\n*${pub.titulo}*\n Cantidad: ${pedidoModal.cantidad} ${pub.unidadMedida}\n Total estimado a abonar: $${total}\n\n¿Podemos coordinar la entrega y el pago?`;
+    const mensaje = `¡Hola ${vendedor.nombreCuenta}! Me interesa tu producto de la plataforma:\n\n*${pub.titulo}*\n Cantidad: ${pedidoModal.cantidad} ${pub.unidadMedida}\n Total estimado a abonar: $${total}\n\n¿Podemos coordinar la entrega y el pago?`;
     
     const url = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
@@ -98,7 +107,7 @@ export const FeedProductos = ({ titulo }) => {
                     {pub.descripcion || 'Sin descripción detallada.'}
                   </p>
                   <h2 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
-                    ${pub.precio} <span style={{ fontSize: '14px', color: '#7f8c8d', fontWeight: 'normal' }}>/ {pub.unidadMedida}</span>
+                    ${parseFloat(pub.precio).toLocaleString('es-AR')} <span style={{ fontSize: '14px', color: '#7f8c8d', fontWeight: 'normal' }}>/ {pub.unidadMedida}</span>
                   </h2>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#666', backgroundColor: '#f4f6f7', padding: '8px', borderRadius: '6px' }}>
                     <span><b>Stock:</b> {pub.stock}</span>
@@ -111,7 +120,7 @@ export const FeedProductos = ({ titulo }) => {
                   <div style={{ padding: '15px', paddingTop: '0' }}>
                     <button 
                       onClick={() => abrirModal(pub)}
-                      style={{ width: '100%', padding: '10px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', transition: '0.3s' }}
+                      style={{ width: '100%', padding: '10px', backgroundColor: '#136d2e', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', transition: '0.3s' }}
                     >
                       Agregar al Pedido
                     </button>
@@ -123,72 +132,105 @@ export const FeedProductos = ({ titulo }) => {
         </div>
       )}
 
-      {/* MODAL DE PEDIDO */}
+      {/* MODAL DE PEDIDO REDISEÑADO Y BIEN UBICADO */}
       {pedidoModal.show && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
-          <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999, overflowY: 'auto', padding: '20px' }}>
+          
+          <div style={{ backgroundColor: 'white', borderRadius: '24px', width: '100%', maxWidth: '480px', padding: '28px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 'auto' }}>
             
-            <h3 style={{ margin: '0 0 5px 0', color: '#2c3e50', fontSize: '22px' }}>Solicitar Pedido</h3>
-            <p style={{ margin: '0 0 20px 0', color: '#7f8c8d', fontSize: '14px' }}>
-              Estás por contactar a <b>{pedidoModal.producto.productores?.nombreCuenta || pedidoModal.producto.emprendimientos?.nombreCuenta}</b>
-            </p>
+            {/* Botón Cerrar (X) */}
+            <button onClick={cerrarModal} style={{ position: 'absolute', top: '24px', right: '24px', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f0f4f8', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', color: '#64748b' }}>
+              ✕
+            </button>
 
-            {/* Ficha rápida del producto */}
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px', backgroundColor: '#f8f9fa', padding: '10px', borderRadius: '8px' }}>
-              {pedidoModal.producto.fotos && pedidoModal.producto.fotos.length > 0 && (
-                <img src={pedidoModal.producto.fotos[0]} alt="prod" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }} />
-              )}
+            {/* Cabecera del Modal */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', paddingRight: '30px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#dcf8c6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D366', flexShrink: 0, fontSize: '24px' }}>
+                <span className="material-symbols-outlined">chat</span>
+              </div>
               <div>
-                <strong style={{ display: 'block' }}>{pedidoModal.producto.titulo}</strong>
-                <span style={{ color: '#27ae60', fontWeight: 'bold' }}>${pedidoModal.producto.precio} / {pedidoModal.producto.unidadMedida}</span>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', color: '#171d16', fontWeight: 'bold' }}>Coordinar Pedido Directo</h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#707a6e', lineHeight: '1.4' }}>Acordá pago, entrega o retiro directamente con el vendedor sin intermediarios.</p>
               </div>
             </div>
 
-            {/* Input de cantidad */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#34495e' }}>Cantidad a solicitar:</label>
-              <input 
-                type="number" 
-                min={pedidoModal.producto.pedidoMinimo || 1} 
-                max={pedidoModal.producto.stock}
-                value={pedidoModal.cantidad}
-                onChange={(e) => setPedidoModal({...pedidoModal, cantidad: e.target.value})}
-                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '16px', boxSizing: 'border-box' }}
-              />
-              <small style={{ color: '#e74c3c', marginTop: '5px', display: 'block' }}>
-                * Pedido mínimo exigido: {pedidoModal.producto.pedidoMinimo} {pedidoModal.producto.unidadMedida}
-              </small>
+            {/* Ficha del Producto (SIN PAIPPA) */}
+            <div style={{ backgroundColor: '#f5fcef', borderRadius: '16px', padding: '16px', display: 'flex', gap: '16px', marginBottom: '20px', alignItems: 'center' }}>
+              {pedidoModal.producto.fotos && pedidoModal.producto.fotos.length > 0 && (
+                <img src={pedidoModal.producto.fotos[0]} alt="prod" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
+              )}
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#171d16', fontWeight: 'bold' }}>{pedidoModal.producto.titulo}</h4>
+                <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#707a6e' }}>
+                  {pedidoModal.producto.productores?.nombreCuenta || pedidoModal.producto.emprendimientos?.nombreCuenta} • {pedidoModal.producto.productores?.localidad || pedidoModal.producto.emprendimientos?.localidad}
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#136d2e', fontWeight: 'bold', fontSize: '15px' }}>
+                    ${parseFloat(pedidoModal.producto.precio).toLocaleString('es-AR')} <span style={{color: '#707a6e', fontWeight: 'normal', fontSize: '12px'}}>/ {pedidoModal.producto.unidadMedida.toLowerCase()}</span>
+                  </span>
+                  <span style={{ backgroundColor: '#fdf3c7', color: '#92400e', fontSize: '11px', padding: '4px 10px', borderRadius: '20px', fontWeight: '600' }}>
+                    ⓘ Mínimo: {pedidoModal.producto.pedidoMinimo} {pedidoModal.producto.unidadMedida.toLowerCase()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Selector de Cantidad */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#171d16' }}>Cantidad a solicitar</span>
+              <span style={{ fontSize: '12px', color: '#707a6e' }}>Unidad de venta: {pedidoModal.producto.unidadMedida}</span>
+            </div>
+            
+            <div style={{ backgroundColor: '#eff6e9', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <button onClick={handleDecrement} style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: 'white', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', color: '#40493f' }}>-</button>
+                <span style={{ fontSize: '22px', fontWeight: 'bold', width: '20px', textAlign: 'center' }}>{pedidoModal.cantidad}</span>
+                <button onClick={handleIncrement} style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: '#75c97f', color: 'white', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>+</button>
+              </div>
+              <div style={{ fontSize: '12px', color: '#40493f', lineHeight: '1.4' }}>
+                <strong>{pedidoModal.cantidad} {pedidoModal.producto.unidadMedida}s</strong> • Total: {pedidoModal.cantidad} {pedidoModal.producto.unidadMedida}<br/>
+                <span style={{ color: '#707a6e' }}>Producto directo de productor local</span>
+              </div>
+            </div>
+
+            {/* Mensaje de validación verde */}
+            <div style={{ backgroundColor: '#dcf8c6', color: '#136d2e', padding: '8px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '20px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check_circle</span>
+              Cumple con el mínimo de compra ({pedidoModal.producto.pedidoMinimo} {pedidoModal.producto.unidadMedida})
             </div>
 
             {/* Resumen de Totales */}
-            <div style={{ backgroundColor: '#f1f5f9', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', color: '#64748b' }}>
-                <span>Subtotal ({pedidoModal.cantidad} {pedidoModal.producto.unidadMedida}):</span>
-                <span>${(pedidoModal.producto.precio * (pedidoModal.cantidad || 0)).toFixed(2)}</span>
+            <div style={{ backgroundColor: '#f5fcef', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '14px', color: '#707a6e' }}>
+                <span>Subtotal ({pedidoModal.cantidad} x ${parseFloat(pedidoModal.producto.precio).toLocaleString('es-AR')}):</span>
+                <span style={{ fontWeight: 'bold', color: '#171d16' }}>${(pedidoModal.producto.precio * pedidoModal.cantidad).toLocaleString('es-AR')}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', color: '#64748b' }}>
-                <span>Valor estimado extra:</span>
-                <span>$0.00</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#171d16' }}>Total Estimado a Abonar:</span>
+                <span style={{ fontSize: '22px', fontWeight: '900', color: '#136d2e' }}>${(pedidoModal.producto.precio * pedidoModal.cantidad).toLocaleString('es-AR')} ARS</span>
               </div>
-              <hr style={{ borderTop: '1px solid #cbd5e1', margin: '10px 0' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', color: '#0f172a', fontSize: '18px' }}>
-                <span>Total valor estimado a Abonar:</span>
-                <span style={{ color: '#27ae60' }}>${(pedidoModal.producto.precio * (pedidoModal.cantidad || 0)).toFixed(2)}</span>
+              <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#707a6e', lineHeight: '1.4', alignItems: 'center' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#136d2e', flexShrink: 0 }}>verified_user</span>
+                <span>El pago se realiza directamente al productor por transferencia bancaria (Alias/CBU) o efectivo contra entrega.</span>
               </div>
             </div>
 
             {/* Botones de acción */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                onClick={cerrarModal} 
-                style={{ flex: 1, padding: '12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+              <button onClick={cerrarModal} style={{ padding: '14px 24px', backgroundColor: '#eff6e9', color: '#171d16', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>
                 Cancelar
               </button>
-              <button 
-                onClick={handleWhatsApp} 
-                style={{ flex: 1, padding: '12px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                Concretar por wsp
+              <button onClick={handleWhatsApp} style={{ flex: 1, padding: '14px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chat</span>
+                Confirmar y Abrir WhatsApp
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>arrow_forward</span>
               </button>
+            </div>
+
+            {/* Footer lock */}
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center', color: '#707a6e', fontSize: '11px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>lock</span>
+              Se registrará tu pedido en EcoMatch y abrirá WhatsApp con el mensaje prearmado.
             </div>
 
           </div>
