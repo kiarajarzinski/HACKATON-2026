@@ -15,10 +15,12 @@ model Usuario {
   emailVerificado   Boolean         @default(false)
   tokenExpiracion   DateTime?
   tokenVerificacion String?         @unique
+  activo            Boolean         @default(true)
   consumidor        Consumidor?
   emprendimiento    Emprendimiento?
   pedidos           pedidos[]
   productor         Productor?
+  reportes          reportes[]
 
   @@map("usuarios")
 }
@@ -131,16 +133,34 @@ model publicaciones {
   esAlertaRadar         Boolean?               @default(false)
   activo                Boolean?               @default(true)
   createdAt             DateTime?              @default(now()) @db.Timestamptz(6)
+  precioOferta          Decimal?               @db.Decimal(12, 2)
+  fechaFinRadar         DateTime?              @db.Timestamptz(6)
+  motivoAlerta          String?
   pedidos               pedidos[]
   categorias_produccion categorias_produccion? @relation(fields: [categoriaProduccionId], references: [id], onUpdate: NoAction)
   emprendimientos       Emprendimiento?        @relation(fields: [emprendimientoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   productores           Productor?             @relation(fields: [productorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reportes              reportes[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reportes {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicacionId String?        @db.Uuid
+  usuarioId     String?
+  motivo        String
+  detalle       String?
+  resuelto      Boolean        @default(false)
+  createdAt     DateTime?      @default(now()) @db.Timestamptz(6)
+  publicaciones publicaciones? @relation(fields: [publicacionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios      Usuario?       @relation(fields: [usuarioId], references: [id], onUpdate: NoAction)
 }
 
 enum RolUsuario {
   PRODUCTOR
   EMPRENDIMIENTO
   CONSUMIDOR
+  ADMIN
 }
 
 enum RubroEmprendimiento {
