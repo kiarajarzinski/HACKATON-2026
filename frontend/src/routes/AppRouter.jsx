@@ -14,6 +14,8 @@ import { EmprendedorDashboard } from '../pages/emprendedor/EmprendedorDashboard'
 import { ProductorDashboard } from '../pages/productor/ProductorDashboard';
 import { ProfilePage } from '../pages/private/ProfilePage';
 
+import { AdminDashboard } from '../pages/admin/AdminDashboard';
+
 export const AppRouter = () => {
   return (
     <AuthProvider>
@@ -34,6 +36,8 @@ export const AppRouter = () => {
           <Route path="/consumidor" element={<ConsumidorDashboard />} />
           <Route path="/emprendedor" element={<EmprendedorDashboard />} />
           <Route path="/productor" element={<ProductorDashboard />} />
+          
+          <Route path="/admin" element={<AdminDashboard />} />
           
           <Route path="/perfil" element={<ProfilePage />} />
           
