@@ -8,8 +8,11 @@ export const ProfilePage = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   
+  // Estados para el CRUD
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [loadingPub, setLoadingPub] = useState(false);
+  const [editingId, setEditingId] = useState(null); // Nuevo estado para saber si estamos editando
+  
   const [pubData, setPubData] = useState({
     titulo: '', descripcion: '', precio: '', unidadMedida: 'Kg', stock: '', pedidoMinimo: '1'
   });
@@ -33,19 +36,59 @@ export const ProfilePage = () => {
     setPubData({ ...pubData, [e.target.name]: e.target.value });
   };
 
-  const handleCrearPublicacion = async (e) => {
+  // Función unificada para CREAR o ACTUALIZAR
+  const handleSubmitPublicacion = async (e) => {
     e.preventDefault();
     setLoadingPub(true);
     try {
-      await api.post('/publicaciones', pubData);
-      setMostrarFormulario(false);
-      setPubData({ titulo: '', descripcion: '', precio: '', unidadMedida: 'Kg', stock: '', pedidoMinimo: '1' });
+      if (editingId) {
+        // ACTUALIZAR
+        await api.put(`/publicaciones/${editingId}`, pubData);
+      } else {
+        // CREAR
+        await api.post('/publicaciones', pubData);
+      }
+      
+      handleCerrarFormulario();
       fetchProfile();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al crear la publicación');
+      alert(error.response?.data?.error || 'Error al procesar la publicación');
     } finally {
       setLoadingPub(false);
     }
+  };
+
+  // Función para ELIMINAR
+  const handleEliminar = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
+    
+    try {
+      await api.delete(`/publicaciones/${id}`);
+      fetchProfile();
+    } catch (error) {
+      alert('Error al eliminar el producto');
+    }
+  };
+
+  // Función para cargar los datos en el formulario para EDITAR
+  const handleEditar = (pub) => {
+    setPubData({
+      titulo: pub.titulo,
+      descripcion: pub.descripcion || '',
+      precio: pub.precio,
+      unidadMedida: pub.unidadMedida,
+      stock: pub.stock,
+      pedidoMinimo: pub.pedidoMinimo
+    });
+    setEditingId(pub.id);
+    setMostrarFormulario(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Sube al inicio donde está el form
+  };
+
+  const handleCerrarFormulario = () => {
+    setMostrarFormulario(false);
+    setEditingId(null);
+    setPubData({ titulo: '', descripcion: '', precio: '', unidadMedida: 'Kg', stock: '', pedidoMinimo: '1' });
   };
 
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando perfil...</div>;
@@ -79,12 +122,9 @@ export const ProfilePage = () => {
 
           <hr style={{ borderTop: '1px solid #eee', margin: '1.5rem 0' }} />
 
-          {/* Bloque restaurado con los detalles específicos por rol */}
           <div style={{ fontSize: '14px', lineHeight: '1.8' }}>
             {rol === 'CONSUMIDOR' && (
-              <>
-                <p><b>Localidad:</b> {consumidor?.localidad || 'No especificada'}</p>
-              </>
+              <p><b>Localidad:</b> {consumidor?.localidad || 'No especificada'}</p>
             )}
 
             {rol === 'EMPRENDIMIENTO' && (
@@ -115,7 +155,7 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: Productos / Actividades */}
+        {/* COLUMNA DERECHA: Productos */}
         <div style={{ flex: '2', minWidth: '400px', backgroundColor: 'white', padding: '2rem', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
           
           {rol === 'CONSUMIDOR' ? (
@@ -130,7 +170,7 @@ export const ProfilePage = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3 style={{ margin: 0 }}>Mis Productos</h3>
                 <button 
-                  onClick={() => setMostrarFormulario(!mostrarFormulario)}
+                  onClick={mostrarFormulario ? handleCerrarFormulario : () => setMostrarFormulario(true)}
                   style={{ padding: '8px 16px', backgroundColor: mostrarFormulario ? '#e74c3c' : '#2ecc71', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                   {mostrarFormulario ? 'Cancelar' : '+ Nuevo Producto'}
@@ -138,8 +178,8 @@ export const ProfilePage = () => {
               </div>
               
               {mostrarFormulario && (
-                <form onSubmit={handleCrearPublicacion} style={{ backgroundColor: '#f9f9f9', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #ddd' }}>
-                  <h4>Crear nueva publicación</h4>
+                <form onSubmit={handleSubmitPublicacion} style={{ backgroundColor: '#f9f9f9', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #ddd' }}>
+                  <h4>{editingId ? 'Editar Publicación' : 'Crear nueva publicación'}</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                     <input type="text" name="titulo" placeholder="Título (ej: Tomates perita)" value={pubData.titulo} onChange={handlePubChange} required style={inputStyle} />
                     <input type="number" name="precio" placeholder="Precio ($)" value={pubData.precio} onChange={handlePubChange} required style={inputStyle} step="0.01" />
@@ -162,8 +202,8 @@ export const ProfilePage = () => {
                     <input type="number" name="pedidoMinimo" value={pubData.pedidoMinimo} onChange={handlePubChange} style={{...inputStyle, width: '100px', margin: 0}} step="0.01" />
                   </div>
 
-                  <button type="submit" disabled={loadingPub} style={{ padding: '10px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '6px', width: '100%', cursor: 'pointer', fontWeight: 'bold' }}>
-                    {loadingPub ? 'Guardando...' : 'Publicar Producto'}
+                  <button type="submit" disabled={loadingPub} style={{ padding: '10px', backgroundColor: editingId ? '#f39c12' : '#3498db', color: 'white', border: 'none', borderRadius: '6px', width: '100%', cursor: 'pointer', fontWeight: 'bold' }}>
+                    {loadingPub ? 'Guardando...' : (editingId ? 'Actualizar Producto' : 'Publicar Producto')}
                   </button>
                 </form>
               )}
@@ -178,12 +218,22 @@ export const ProfilePage = () => {
                   {misPublicaciones.map(pub => (
                     <div key={pub.id} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '15px', position: 'relative' }}>
                       <span style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: pub.activo ? '#2ecc71' : '#e74c3c', width: '12px', height: '12px', borderRadius: '50%' }} title={pub.activo ? 'Activo' : 'Pausado'} />
-                      <h4 style={{ margin: '0 0 10px 0' }}>{pub.titulo}</h4>
+                      
+                      <h4 style={{ margin: '0 0 10px 0', paddingRight: '20px' }}>{pub.titulo}</h4>
                       <p style={{ margin: '5px 0', color: '#7f8c8d', fontSize: '13px', height: '40px', overflow: 'hidden' }}>{pub.descripcion || 'Sin descripción'}</p>
                       <h3 style={{ margin: '10px 0', color: '#2c3e50' }}>${pub.precio} <span style={{ fontSize: '14px', fontWeight: 'normal' }}>/ {pub.unidadMedida}</span></h3>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#555', backgroundColor: '#f9f9f9', padding: '8px', borderRadius: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#555', backgroundColor: '#f9f9f9', padding: '8px', borderRadius: '4px', marginBottom: '10px' }}>
                         <span><b>Stock:</b> {pub.stock}</span>
                         <span><b>Mínimo:</b> {pub.pedidoMinimo}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                        <button onClick={() => handleEditar(pub)} style={{ flex: 1, padding: '5px', backgroundColor: '#f39c12', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                          ✏️ Editar
+                        </button>
+                        <button onClick={() => handleEliminar(pub.id)} style={{ flex: 1, padding: '5px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                          🗑️ Eliminar
+                        </button>
                       </div>
                     </div>
                   ))}

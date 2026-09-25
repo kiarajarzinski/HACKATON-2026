@@ -33,3 +33,25 @@ export const crearPublicacion = async (usuarioId, rol, datos) => {
 
   return nuevaPublicacion;
 };
+
+export const actualizarPublicacion = async (id, datos) => {
+  const publicacionActualizada = await prisma.publicaciones.update({
+    where: { id },
+    data: {
+      titulo: datos.titulo,
+      descripcion: datos.descripcion,
+      precio: parseFloat(datos.precio),
+      unidadMedida: datos.unidadMedida,
+      stock: parseFloat(datos.stock),
+      pedidoMinimo: parseFloat(datos.pedidoMinimo)
+    }
+  });
+  return publicacionActualizada;
+};
+
+export const eliminarPublicacion = async (id) => {
+  await prisma.publicaciones.delete({
+    where: { id }
+  });
+  return { mensaje: 'Publicación eliminada correctamente' };
+};
